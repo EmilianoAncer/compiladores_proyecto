@@ -1,0 +1,8 @@
+program Test;
+var int : test1, test2; float : test3;
+{
+    test1 = 12;
+    test3 = 0.0;
+    test2 = 2*2;
+
+}
