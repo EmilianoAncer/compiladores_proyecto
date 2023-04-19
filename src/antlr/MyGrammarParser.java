@@ -19,7 +19,7 @@ public class MyGrammarParser extends Parser {
 		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
 		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17, 
 		T__17=18, T__18=19, T__19=20, T__20=21, T__21=22, T__22=23, T__23=24, 
-		ID=25, CTE_I=26, CTE_F=27, CTE_STRING=28, SPACES=29;
+		ID=25, CTE_I=26, CTE_F=27, CTE_C=28, CTE_B=29, CTE_STRING=30, SPACES=31;
 	public static final int
 		RULE_programa = 0, RULE_vars = 1, RULE_var_init = 2, RULE_extra_vars = 3, 
 		RULE_new_id = 4, RULE_tipo = 5, RULE_bloque = 6, RULE_bloque_init = 7, 
@@ -50,7 +50,7 @@ public class MyGrammarParser extends Parser {
 		return new String[] {
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, null, null, null, null, 
-			null, "ID", "CTE_I", "CTE_F", "CTE_STRING", "SPACES"
+			null, "ID", "CTE_I", "CTE_F", "CTE_C", "CTE_B", "CTE_STRING", "SPACES"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -1533,7 +1533,7 @@ public class MyGrammarParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\u0004\u0001\u001d\u00bd\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001"+
+		"\u0004\u0001\u001f\u00bd\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001"+
 		"\u0002\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004"+
 		"\u0002\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0002\u0007\u0007\u0007"+
 		"\u0002\b\u0007\b\u0002\t\u0007\t\u0002\n\u0007\n\u0002\u000b\u0007\u000b"+
@@ -1606,12 +1606,12 @@ public class MyGrammarParser extends Parser {
 		"\u0000uv\u0005\u0011\u0000\u0000vw\u0005\u000e\u0000\u0000wx\u0003\u001c"+
 		"\u000e\u0000xy\u0005\u000f\u0000\u0000yz\u0005\u0002\u0000\u0000z\u001b"+
 		"\u0001\u0000\u0000\u0000{|\u0003 \u0010\u0000|}\u0003\u001e\u000f\u0000"+
-		"}\u0081\u0001\u0000\u0000\u0000~\u007f\u0005\u001c\u0000\u0000\u007f\u0081"+
+		"}\u0081\u0001\u0000\u0000\u0000~\u007f\u0005\u001e\u0000\u0000\u007f\u0081"+
 		"\u0003\u001e\u000f\u0000\u0080{\u0001\u0000\u0000\u0000\u0080~\u0001\u0000"+
 		"\u0000\u0000\u0081\u001d\u0001\u0000\u0000\u0000\u0082\u0083\u0005\u0005"+
 		"\u0000\u0000\u0083\u0084\u0003 \u0010\u0000\u0084\u0085\u0003\u001e\u000f"+
 		"\u0000\u0085\u008b\u0001\u0000\u0000\u0000\u0086\u0087\u0005\u0005\u0000"+
-		"\u0000\u0087\u0088\u0005\u001c\u0000\u0000\u0088\u008b\u0003\u001e\u000f"+
+		"\u0000\u0087\u0088\u0005\u001e\u0000\u0000\u0088\u008b\u0003\u001e\u000f"+
 		"\u0000\u0089\u008b\u0001\u0000\u0000\u0000\u008a\u0082\u0001\u0000\u0000"+
 		"\u0000\u008a\u0086\u0001\u0000\u0000\u0000\u008a\u0089\u0001\u0000\u0000"+
 		"\u0000\u008b\u001f\u0001\u0000\u0000\u0000\u008c\u008d\u0003$\u0012\u0000"+

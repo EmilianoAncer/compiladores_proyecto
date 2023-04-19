@@ -36,13 +36,18 @@ termino: factor termino_op;
 termino_op: '*' termino | '/' termino |;
 
 factor: '(' expresion ')' | factor_op var_cte;
-factor_op: '+' | '-' |;
+factor_op:
+	'+'
+	| '-'
+	|; //TODO fix this, check notes to see how it should be
 
 var_cte: ID | CTE_I | CTE_F;
 
 ID: [a-zA-Z_] [a-zA-Z_0-9]*;
 CTE_I: [0-9]+;
 CTE_F: [0-9]+ ('.' [0-9]*)? ([eE][+-]? [0-9]+)?;
+CTE_C: '"' (~'"')? '"';
+CTE_B: 'true' | 'false';
 CTE_STRING: '"' (~'"')* '"';
 
 SPACES: [ \t\r\n]+ -> skip;

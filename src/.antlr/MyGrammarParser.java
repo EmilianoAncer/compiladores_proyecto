@@ -19,7 +19,7 @@ public class MyGrammarParser extends Parser {
 		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
 		T__9=10, T__10=11, T__11=12, T__12=13, T__13=14, T__14=15, T__15=16, T__16=17, 
 		T__17=18, T__18=19, T__19=20, T__20=21, T__21=22, T__22=23, T__23=24, 
-		ID=25, CTE_I=26, CTE_F=27, CTE_STRING=28, SPACES=29;
+		ID=25, CTE_I=26, CTE_F=27, CTE_C=28, CTE_B=29, CTE_STRING=30, SPACES=31;
 	public static final int
 		RULE_programa = 0, RULE_vars = 1, RULE_var_init = 2, RULE_extra_vars = 3, 
 		RULE_new_id = 4, RULE_tipo = 5, RULE_bloque = 6, RULE_bloque_init = 7, 
@@ -50,7 +50,7 @@ public class MyGrammarParser extends Parser {
 		return new String[] {
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, null, null, null, null, 
-			null, "ID", "CTE_I", "CTE_F", "CTE_STRING", "SPACES"
+			null, "ID", "CTE_I", "CTE_F", "CTE_C", "CTE_B", "CTE_STRING", "SPACES"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -1308,9 +1308,9 @@ public class MyGrammarParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\37\u00bf\4\2\t\2"+
-		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
-		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3!\u00bf\4\2\t\2\4"+
+		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
+		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
 		"\4\32\t\32\3\2\3\2\3\2\3\2\3\2\3\2\3\3\3\3\3\3\5\3>\n\3\3\4\3\4\3\4\3"+
 		"\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\5\5K\n\5\3\6\3\6\5\6O\n\6\3\7\3\7\3\b\3"+
@@ -1341,10 +1341,10 @@ public class MyGrammarParser extends Parser {
 		"\22\2mn\7\21\2\2no\5\16\b\2op\5\32\16\2pq\7\4\2\2q\31\3\2\2\2rs\7\22\2"+
 		"\2sv\5\16\b\2tv\3\2\2\2ur\3\2\2\2ut\3\2\2\2v\33\3\2\2\2wx\7\23\2\2xy\7"+
 		"\20\2\2yz\5\36\20\2z{\7\21\2\2{|\7\4\2\2|\35\3\2\2\2}~\5\"\22\2~\177\5"+
-		" \21\2\177\u0083\3\2\2\2\u0080\u0081\7\36\2\2\u0081\u0083\5 \21\2\u0082"+
+		" \21\2\177\u0083\3\2\2\2\u0080\u0081\7 \2\2\u0081\u0083\5 \21\2\u0082"+
 		"}\3\2\2\2\u0082\u0080\3\2\2\2\u0083\37\3\2\2\2\u0084\u0085\7\7\2\2\u0085"+
 		"\u0086\5\"\22\2\u0086\u0087\5 \21\2\u0087\u008d\3\2\2\2\u0088\u0089\7"+
-		"\7\2\2\u0089\u008a\7\36\2\2\u008a\u008d\5 \21\2\u008b\u008d\3\2\2\2\u008c"+
+		"\7\2\2\u0089\u008a\7 \2\2\u008a\u008d\5 \21\2\u008b\u008d\3\2\2\2\u008c"+
 		"\u0084\3\2\2\2\u008c\u0088\3\2\2\2\u008c\u008b\3\2\2\2\u008d!\3\2\2\2"+
 		"\u008e\u008f\5&\24\2\u008f\u0090\5$\23\2\u0090#\3\2\2\2\u0091\u0092\7"+
 		"\24\2\2\u0092\u0099\5&\24\2\u0093\u0094\7\25\2\2\u0094\u0099\5&\24\2\u0095"+

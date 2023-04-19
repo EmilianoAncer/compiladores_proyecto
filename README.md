@@ -9,3 +9,4 @@ Pude hacer un poco de testing a mano y vi que funcionaba, pero necesito investig
 1. Commit de setup, instalando las librerias necesarias.
 2. Se agrego el archivo de MyGrammar y se tradujo a ANTLR el gramar de la tarea 3.
 3. Se agrego escribio el README.
+4. El grammar de bloque estaba mal diseñado, solo podia leer una linea, se arrglo el problema
