@@ -28,7 +28,11 @@ print_extra:
 	|;
 
 expresion: exp expresion_cond;
-expresion_cond: '>' exp | '<' exp | '!=' exp |;
+expresion_cond:
+	'>' exp
+	| '<' exp
+	| '!=' exp
+	|; //TODO add <=, >=, and, or (maybe "not")
 exp: termino exp_op;
 exp_op: '+' exp | '-' exp |;
 
@@ -46,7 +50,8 @@ var_cte: ID | CTE_I | CTE_F;
 ID: [a-zA-Z_] [a-zA-Z_0-9]*;
 CTE_I: [0-9]+;
 CTE_F: [0-9]+ ('.' [0-9]*)? ([eE][+-]? [0-9]+)?;
-CTE_C: '"' (~'"')? '"';
+CTE_C:
+	'"' (~'"')? '"'; //TODO puede ser que se cambie el doble quote a single quote
 CTE_B: 'true' | 'false';
 CTE_STRING: '"' (~'"')* '"';
 
