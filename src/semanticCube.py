@@ -1,5 +1,4 @@
 # Probablemente puedo rehacer esto para cuando no encuentre la respuesta en el diccionario, rerese el error, en vez de especificar todo lo que me daria errores.
-
 semanticCube = {  # TODO Check if ill add "not"
     'int': {
         '+': {

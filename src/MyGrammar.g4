@@ -27,25 +27,30 @@ print_extra:
 	| ',' CTE_STRING print_extra
 	|;
 
-expresion: exp expresion_cond;
+expresion: exp exp_super | exp expresion_cond;
+
+exp_super: 'and' expresion | 'or' expresion |;
+
 expresion_cond:
-	'>' exp
-	| '<' exp
-	| '!=' exp
-	|; //TODO add <=, >=, and, or (maybe "not")
+	'>' expresion
+	| '<' expresion
+	| '!=' expresion
+	| '>=' expresion
+	| '<=' expresion
+	| '==' expresion
+	|;
+
 exp: termino exp_op;
 exp_op: '+' exp | '-' exp |;
 
 termino: factor termino_op;
 termino_op: '*' termino | '/' termino |;
 
-factor: '(' expresion ')' | factor_op var_cte;
-factor_op:
-	'+'
-	| '-'
-	|; //TODO fix this, check notes to see how it should be
+factor: '(' expresion ')' | var_cte;
+//factor_op:
+// '+' | '-' |; //TODO fix this, check notes to see how it should be
 
-var_cte: ID | CTE_I | CTE_F;
+var_cte: ID | CTE_I | CTE_F | CTE_C | CTE_STRING;
 
 ID: [a-zA-Z_] [a-zA-Z_0-9]*;
 CTE_I: [0-9]+;
