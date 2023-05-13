@@ -10,13 +10,84 @@ class MyListener(MyGrammarListener):
     def enterPrograma(self, ctx: MyGrammarParser.ProgramaContext):
         program_id = ctx.ID().getText()
         print(f"Program ID: {program_id}")
+        ctx.context = 'global'
+        ctx.whichFunc = 'main'
 
     # Exit a parse tree produced by MyGrammarParser#programa.
     def exitPrograma(self, ctx: MyGrammarParser.ProgramaContext):
         pass
 
+        # Enter a parse tree produced by MyGrammarParser#func.
+    def enterFunc(self, ctx: MyGrammarParser.FuncContext):
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#func.
+    def exitFunc(self, ctx: MyGrammarParser.FuncContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#func_init.
+    def enterFunc_init(self, ctx: MyGrammarParser.Func_initContext):
+        ctx.context = 'func'
+        func_type = ctx.func_tipo().getText()
+        func_name = ctx.ID().getText()
+        ctx.whichFunc = func_name
+        func[func_name] = {}
+        func[func_name]['type'] = func_type
+        func[func_name]['var'] = {}
+
+    # Exit a parse tree produced by MyGrammarParser#func_init.
+    def exitFunc_init(self, ctx: MyGrammarParser.Func_initContext):
+        ctx.inFunc = 'global'
+
+    # Enter a parse tree produced by MyGrammarParser#extra_func.
+    def enterExtra_func(self, ctx: MyGrammarParser.Extra_funcContext):
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#extra_func.
+    def exitExtra_func(self, ctx: MyGrammarParser.Extra_funcContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#parameters.
+    def enterParameters(self, ctx: MyGrammarParser.ParametersContext):
+        if ctx.tipo():
+            type = ctx.tipo().getText()
+            id = ctx.ID().getText()
+            func_name = ctx.parentCtx.whichFunc
+            func[func_name]['var'][id] = {}
+            func[func_name]['var'][id]['type'] = type
+            ctx.whichFunc = ctx.parentCtx.whichFunc
+
+    # Exit a parse tree produced by MyGrammarParser#parameters.
+    def exitParameters(self, ctx: MyGrammarParser.ParametersContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#extra_parameter.
+    def enterExtra_parameter(self, ctx: MyGrammarParser.Extra_parameterContext):
+        if ctx.tipo():
+            type = ctx.tipo().getText()
+            id = ctx.ID().getText()
+            func_name = ctx.parentCtx.whichFunc
+            func[func_name]['var'][id] = {}
+            func[func_name]['var'][id]['type'] = type
+            ctx.whichFunc = ctx.parentCtx.whichFunc
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#extra_parameter.
+    def exitExtra_parameter(self, ctx: MyGrammarParser.Extra_parameterContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#func_tipo.
+    def enterFunc_tipo(self, ctx: MyGrammarParser.Func_tipoContext):
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#func_tipo.
+    def exitFunc_tipo(self, ctx: MyGrammarParser.Func_tipoContext):
+        pass
+
     # Enter a parse tree produced by MyGrammarParser#var.
     def enterVar(self, ctx: MyGrammarParser.VarContext):
+        ctx.context = ctx.parentCtx.context
+        ctx.whichFunc = ctx.parentCtx.whichFunc
         pass
 
     # Exit a parse tree produced by MyGrammarParser#var.
@@ -25,42 +96,57 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#var_init.
     def enterVar_init(self, ctx: MyGrammarParser.Var_initContext):
-
-        tipo = ctx.tipo().getText()
-        var_ID = ctx.ID().getText()
-
-        var[tipo][var_ID] = None
-        ctx.tipo_ = tipo
-
-        '''
-        var_tipo = ctx.tipo().getText()
-        print(var_tipo, 'Var IDs: ')
-        var_ID = ctx.ID().getText()
-        print(var_ID)
-        '''
+        # TODO add a check if var was initialized in another type remeber to do the same in extra
+        ctx.context = ctx.parentCtx.context
+        if ctx.parentCtx.context == 'global':
+            type = ctx.tipo().getText()
+            var_ID = ctx.ID().getText()
+            var[var_ID] = {}
+            var[var_ID]['type'] = type
+            ctx.whichFunc = ctx.parentCtx.whichFunc
+            ctx.tipo_ = type
+        else:
+            type = ctx.tipo().getText()
+            id = ctx.ID().getText()
+            func_name = ctx.parentCtx.whichFunc
+            func[func_name]['var'][id] = {}
+            func[func_name]['var'][id]['type'] = type
+            ctx.whichFunc = ctx.parentCtx.whichFunc
+            ctx.tipo_ = type
 
     # Exit a parse tree produced by MyGrammarParser#var_init.
+
     def exitVar_init(self, ctx: MyGrammarParser.Var_initContext):
         pass
 
     # Enter a parse tree produced by MyGrammarParser#extra_vars.
     def enterExtra_vars(self, ctx: MyGrammarParser.Extra_varsContext):
-        if ctx.ID():
-            tipo = ctx.parentCtx.tipo_
-            var_ID = ctx.ID().getText()
-            var[tipo][var_ID] = None
+        ctx.context = ctx.parentCtx.context
+        if ctx.parentCtx.context == 'global':
+            if ctx.ID():
+                type = ctx.parentCtx.tipo_
+                var_ID = ctx.ID().getText()
+                var[var_ID] = {}
+                var[var_ID]['type'] = type
+        else:
+            type = ctx.parentCtx.tipo_
+            if ctx.ID():
+                id = ctx.ID().getText()
+                func_name = ctx.parentCtx.whichFunc
+                func[func_name]['var'][id] = {}
+                func[func_name]['var'][id]['type'] = type
+                ctx.whichFunc = ctx.parentCtx.whichFunc
         ctx.tipo_ = ctx.parentCtx.tipo_
 
-        # if ctx.ID():
-        #   var_ID = ctx.ID().getText()
-        #  print(var_ID)
-
     # Exit a parse tree produced by MyGrammarParser#extra_vars.
+
     def exitExtra_vars(self, ctx: MyGrammarParser.Extra_varsContext):
         pass
 
     # Enter a parse tree produced by MyGrammarParser#new_type.
     def enterNew_type(self, ctx: MyGrammarParser.New_typeContext):
+        ctx.context = ctx.parentCtx.context
+        ctx.whichFunc = ctx.parentCtx.whichFunc
         pass
 
     # Exit a parse tree produced by MyGrammarParser#new_type.
@@ -229,15 +315,11 @@ class MyListener(MyGrammarListener):
 
 
 var = {
-    'int': {
 
-    },
-    'float': {
+}
 
-    },
-    'bool': {
+func = {
 
-    }
 }
 
 
@@ -253,6 +335,7 @@ def main():
     walker.walk(listener, tree)
 
     print(var)
+    print(func)
 
 
 if __name__ == '__main__':

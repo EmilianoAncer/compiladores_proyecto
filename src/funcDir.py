@@ -1,7 +1,7 @@
 func = {
     'example': {
         'type': 'void',
-        'vars': {
+        'var': {
             'var1': {
                 'type': 'int',
                 'value': 8

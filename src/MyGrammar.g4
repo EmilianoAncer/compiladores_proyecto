@@ -4,16 +4,23 @@ options {
 	language = Python3;
 }
 
-programa: 'program' ID ';' var func bloque;
+programa: 'program' ID ';' var func 'main()' bloque;
+
+func: 'def' func_init |;
+func_init:
+	func_tipo ID '(' parameters ')' var bloque extra_func;
+extra_func:
+	func
+	|; //TODO test this, it should allow more than one function
+parameters: tipo ID extra_parameter |;
+extra_parameter: ',' tipo ID extra_parameter |;
+
+func_tipo: 'int' | 'float' | 'bool' | 'void' |;
 
 var: 'var' var_init |;
 var_init: tipo ':' ID extra_vars ';' new_type;
 extra_vars: ',' ID extra_vars |;
 new_type: var_init |;
-
-func: 'def' func_init |;
-func_init: tipo ID '(' parameters ')' bloque extra_func;
-extra_func: extra_func |;
 
 tipo: 'int' | 'float' | 'bool';
 
