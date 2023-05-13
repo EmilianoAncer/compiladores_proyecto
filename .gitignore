@@ -1,3 +1,7 @@
+### ANTLR ###
+.antlr/
+antlr/
+
 ### direnv ###
 .direnv
 .envrc
