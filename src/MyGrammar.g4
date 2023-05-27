@@ -9,9 +9,7 @@ programa: 'program' ID ';' var func 'main()' bloque;
 func: 'def' func_init |;
 func_init:
 	func_tipo ID '(' parameters ')' var bloque extra_func;
-extra_func:
-	func
-	|; //TODO test this, it should allow more than one function
+extra_func: func |;
 parameters: tipo ID extra_parameter |;
 extra_parameter: ',' tipo ID extra_parameter |;
 
@@ -28,28 +26,41 @@ bloque: '{' bloque_init '}' |;
 bloque_init: bloque_def |;
 bloque_def: estatuto bloque_init;
 
-estatuto: asignacion | condicion | escritura;
+estatuto:
+	asignacion
+	| condicion
+	| escritura
+	| func_call
+	| while_loop;
 
 asignacion: ID '=' expresion ';';
 
-condicion: 'if' '(' expresion ')' bloque cond_else ';';
+condicion: 'if' '(' expresion ')' bloque cond_else;
 cond_else: 'else' bloque |;
 
 escritura: 'print' '(' print_def ')' ';';
 print_def: expresion print_extra;
 print_extra: ',' expresion print_extra |;
 
-expresion: exp exp_super | exp expresion_cond;
+func_call: ID '(' func_call_params ')' ';';
+func_call_params: expresion f_c_params_extra |;
+f_c_params_extra: ',' expresion f_c_params_extra |;
 
-exp_super: 'and' expresion | 'or' expresion |;
+while_loop: 'while' '(' expresion ')' bloque;
 
-expresion_cond:
-	'>' expresion
-	| '<' expresion
-	| '!=' expresion
-	| '>=' expresion
-	| '<=' expresion
-	| '==' expresion
+expresion: exp_super;
+
+exp_super: exp_cond exp_super_op;
+exp_super_op: 'and' exp_cond | 'or' exp_cond |;
+
+exp_cond: exp exp_cond_op;
+exp_cond_op:
+	'>' exp
+	| '<' exp
+	| '>=' exp
+	| '<=' exp
+	| '==' exp
+	| '!=' exp
 	|;
 
 exp: termino exp_op;
@@ -58,9 +69,7 @@ exp_op: '+' exp | '-' exp |;
 termino: factor termino_op;
 termino_op: '*' termino | '/' termino |;
 
-factor: '(' expresion ')' | var_cte;
-//factor_op:
-// '+' | '-' |; //TODO fix this, check notes to see how it should be
+factor: var_cte | '(' expresion ')';
 
 var_cte: ID | CTE_I | CTE_F | CTE_B | CTE_STRING;
 

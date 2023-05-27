@@ -43,12 +43,12 @@ semanticCube = {  # TODO Check if ill add "not"
         },
         '==': {
             'int': 'bool',
-            'float': 'error',  # TODO Puede ser que lo cambie a bool
+            'float': 'error',
             'bool': 'error'
         },
         '!=': {
             'int': 'bool',
-            'float': 'error',  # TODO Puede ser que lo cambie a bool
+            'float': 'error',
             'bool': 'error'
         },
         'and': {
@@ -105,12 +105,12 @@ semanticCube = {  # TODO Check if ill add "not"
         },
         '==': {
             'float': 'bool',
-            'int': 'error',  # TODO Puede ser que lo cambie a bool
+            'int': 'error',
             'bool': 'error'
         },
         '!=': {
             'float': 'bool',
-            'int': 'error',  # TODO Puede ser que lo cambie a bool
+            'int': 'error',
             'bool': 'error'
         },
         'and': {
@@ -176,12 +176,12 @@ semanticCube = {  # TODO Check if ill add "not"
             'float': 'error'
         },
         '==': {
-            'bool': 'error',
+            'bool': 'bool',
             'int': 'error',
             'float': 'error'
         },
         '!=': {
-            'bool': 'error',
+            'bool': 'bool',
             'int': 'error',
             'float': 'error'
         }
@@ -189,6 +189,6 @@ semanticCube = {  # TODO Check if ill add "not"
 }
 
 
-def return_Type(left, op, right):
+def return_type(left, op, right):
     exp_type = semanticCube[left][op][right]
     return exp_type

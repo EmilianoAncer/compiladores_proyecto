@@ -1,0 +1,6 @@
+program Test;
+var bool : exp1, exp2; int : a, b, c, d, e, f;
+main()
+{
+    exp1 = a * b * c + d - e * f > (f * b / (e + d)) - (a + b) / c and c >= b;
+}

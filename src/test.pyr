@@ -1,33 +1,43 @@
 program Test;
 var int : test1, test2; float : test3;
+
 def int func1(int param1,  float param2, bool param3)
 var int : funcTest1, funcTest2; float : funcTest3;
 {
-    print("In Func1!");
+    print(a);
 }
+
 def void func2()
 {
-    print("In Func2!");
+    print(a+b);
 }
 main()
 {
     test1 = 12;
     test3 = 0.0;
     test2 = 2*2;
+    test4 = a+b*c-(c/d)
+
+    func1(2, 3.0, True)
 
     if(2 > 0)
     {
         test3 = 2.3;
-    };
+    }
 
-    if(0 > 2)
+    while(a+b > c)
+    {
+        print(a)
+    }
+
+    if(0 < 2)
     {
         test3 = 1.1;
     }
     else
     {
         test3 = 0.1;
-    };
+    }
 
     print ("Hello, world!");
     print (test1);

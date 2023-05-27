@@ -1,6 +1,8 @@
 ### ANTLR ###
 .antlr/
 antlr/
+*.interp
+*.tokens
 
 ### direnv ###
 .direnv
