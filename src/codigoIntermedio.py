@@ -48,7 +48,10 @@ class MyListener(MyGrammarListener):
         func[func_name] = {}
         func[func_name]['type'] = func_type
         func[func_name]['var'] = {}
-        func[func_name]['num_param'] = 0
+        func[func_name]['num_param'] = {
+            'int': 0, 'float': 0, 'bool': 0}
+        func[func_name]['num_var'] = {
+            'int': 0, 'float': 0, 'bool': 0, 'string': 0}
 
     # Exit a parse tree produced by MyGrammarParser#func_init.
     def exitFunc_init(self, ctx: MyGrammarParser.Func_initContext):
@@ -68,9 +71,9 @@ class MyListener(MyGrammarListener):
             type = ctx.tipo().getText()
             id = ctx.ID().getText()
             func_name = ctx.parentCtx.whichFunc
-            func[func_name]['var'][id] = {}
-            func[func_name]['var'][id] = type
-            func[func_name]['num_param'] += 1
+            func[func_name]['var'][id] = [
+                type, get_var_address(type, ctx.start.line)]
+            func[func_name]['num_param'][type] += 1
             ctx.whichFunc = ctx.parentCtx.whichFunc
 
     # Exit a parse tree produced by MyGrammarParser#parameters.
@@ -83,9 +86,9 @@ class MyListener(MyGrammarListener):
             type = ctx.tipo().getText()
             id = ctx.ID().getText()
             func_name = ctx.parentCtx.whichFunc
-            func[func_name]['var'][id] = {}
-            func[func_name]['var'][id] = type
-            func[func_name]['num_param'] += 1
+            func[func_name]['var'][id] = [
+                type, get_var_address(type, ctx.start.line)]
+            func[func_name]['num_param'][type] += 1
             ctx.whichFunc = ctx.parentCtx.whichFunc
         pass
 
@@ -122,8 +125,7 @@ class MyListener(MyGrammarListener):
                 curr_line = ctx.start.line
                 errors.same_variable_init(curr_line, var_ID)
 
-            var[var_ID] = {}
-            var[var_ID] = type
+            var[var_ID] = [type, get_var_address(type, ctx.start.line)]
             ctx.whichFunc = ctx.parentCtx.whichFunc
             ctx.tipo_ = type
         else:
@@ -134,12 +136,14 @@ class MyListener(MyGrammarListener):
                 curr_line = ctx.start.line
                 errors.same_variable_init(curr_line, id)
 
-            func[func_name]['var'][id] = {}
-            func[func_name]['var'][id] = type
-            if func[func_name].get('num_var'):
-                func[func_name]['num_var'] += 1
+            func[func_name]['var'][id] = [
+                type, get_var_address(type, ctx.start.line)]
+            func[func_name]['num_var'][type] += 1
+            # TODO test this
+            '''if func[func_name]['num_var'].get(type):
+                func[func_name]['num_var'][type] += 1
             else:
-                func[func_name]['num_var'] = 0
+                func[func_name]['num_var'][type] = 0'''
             ctx.whichFunc = ctx.parentCtx.whichFunc
             ctx.tipo_ = type
 
@@ -159,8 +163,7 @@ class MyListener(MyGrammarListener):
                     curr_line = ctx.start.line
                     errors.same_variable_init(curr_line, var_ID)
 
-                var[var_ID] = {}
-                var[var_ID] = type
+                var[var_ID] = [type, get_var_address(type, ctx.start.line)]
         else:
             type = ctx.parentCtx.tipo_
             if ctx.ID():
@@ -170,9 +173,9 @@ class MyListener(MyGrammarListener):
                     curr_line = ctx.start.line
                     errors.same_variable_init(curr_line, id)
 
-                func[func_name]['var'][id] = {}
-                func[func_name]['var'][id] = type
-                func[func_name]['num_var'] += 1
+                func[func_name]['var'][id] = [
+                    type, get_var_address(type, ctx.start.line)]
+                func[func_name]['num_var'][type] += 1
                 ctx.whichFunc = ctx.parentCtx.whichFunc
         ctx.tipo_ = ctx.parentCtx.tipo_
 
@@ -233,37 +236,39 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#asignacion.
     def enterAsignacion(self, ctx: MyGrammarParser.AsignacionContext):
-        rule_name = MyGrammarParser.ruleNames[ctx.getRuleIndex()]
-        print(rule_name)
+        pass
 
     # Exit a parse tree produced by MyGrammarParser#asignacion.
     def exitAsignacion(self, ctx: MyGrammarParser.AsignacionContext):
-        self.debugExit(ctx)
         var_id = ctx.ID().getText()
         if len(pilaO) > 0:
             res = pilaO.pop(-1)
-            if var[var_id] == var[res]:
+            print(res)
+            if var[var_id][0] == var[res][0]:
                 quad.append(genQuad.asign(var_id, res))
             else:
                 curr_line = ctx.start.line
                 errors.asign_bad_type(curr_line, var[var_id], var[res])
 
+        self.debugExit(ctx)
+        clear_temps()
+
     # Enter a parse tree produced by MyGrammarParser#condicion.
 
     def enterCondicion(self, ctx: MyGrammarParser.CondicionContext):
-        pass
+        self.debugEnter(ctx)
 
     # Exit a parse tree produced by MyGrammarParser#condicion.
     def exitCondicion(self, ctx: MyGrammarParser.CondicionContext):
-        pass
+        self.debugExit(ctx)
 
     # Enter a parse tree produced by MyGrammarParser#cond_else.
     def enterCond_else(self, ctx: MyGrammarParser.Cond_elseContext):
-        pass
+        self.debugEnter(ctx)
 
     # Exit a parse tree produced by MyGrammarParser#cond_else.
     def exitCond_else(self, ctx: MyGrammarParser.Cond_elseContext):
-        pass
+        self.debugExit(ctx)
 
     # Enter a parse tree produced by MyGrammarParser#escritura.
     def enterEscritura(self, ctx: MyGrammarParser.EscrituraContext):
@@ -317,12 +322,12 @@ class MyListener(MyGrammarListener):
                         left_operand = pilaO.pop(-1)
                         operator = POper.pop(-1)
                         res_type = return_type(
-                            var[left_operand], operator, var[right_operand])
+                            var[left_operand][0], operator, var[right_operand][0])
                         if res_type == 'error':
                             errors.bad_type(ctx.start.line)
-                        res = next_temp(res_type)
-                        quad.append(genQuad.exp(
-                            operator, left_operand, right_operand, res))
+                        res = add_temp(res_type, ctx.start.line)
+                        quad.append(genQuad.exp(  # TODO change to addresses look at exp
+                            operator, left_operand, right_operand, res))  # TODO do res too
                         print(quad)  # DEBUG
                         self.exp_super_flag = True
                         pilaO.append(res)
@@ -358,13 +363,12 @@ class MyListener(MyGrammarListener):
                         left_operand = pilaO.pop(-1)
                         operator = POper.pop(-1)
                         res_type = return_type(
-                            var[left_operand], operator, var[right_operand])
+                            var[left_operand][0], operator, var[right_operand][0])
                         if res_type == 'error':
                             errors.bad_type(ctx.start.line)
-                        res = next_temp(res_type)
-                        quad.append(genQuad.exp(
-                            operator, left_operand, right_operand, res))
-                        print(quad)  # DEBUG
+                        res = add_temp(res_type, ctx.start.line)
+                        quad.append(genQuad.exp(  # TODO change to adresses ex: var[left_operand][1]
+                            operator, left_operand, right_operand, res))  # TODO Do it to res too
                         self.exp_cond_flag = True
                         pilaO.append(res)
 
@@ -412,12 +416,12 @@ class MyListener(MyGrammarListener):
                         left_operand = pilaO.pop(-1)
                         operator = POper.pop(-1)
                         res_type = return_type(
-                            var[left_operand], operator, var[right_operand])
+                            var[left_operand][0], operator, var[right_operand][0])
                         if res_type == 'error':
                             errors.bad_type(ctx.start.line)
-                        res = next_temp(res_type)
-                        quad.append(genQuad.exp(
-                            operator, left_operand, right_operand, res))
+                        res = add_temp(res_type, ctx.start.line)
+                        quad.append(genQuad.exp(  # TODO change to addreses look at exp aux
+                            operator, left_operand, right_operand, res))  # TODO do res too
                         print(quad)  # DEBUG
                         self.exp_flag = True
                         pilaO.append(res)
@@ -430,9 +434,7 @@ class MyListener(MyGrammarListener):
             child = ctx.getChild(0)
             if isinstance(child, TerminalNode):
                 self.exp_aux(ctx)
-
                 POper.append(child.getText())
-        self.debugEnter(ctx)
 
     # Exit a parse tree produced by MyGrammarParser#exp_op.
 
@@ -442,19 +444,15 @@ class MyListener(MyGrammarListener):
     # Enter a parse tree produced by MyGrammarParser#termino.
 
     def enterTermino(self, ctx: MyGrammarParser.TerminoContext):
-        self.debugEnter(ctx)
+        pass
 
     # Exit a parse tree produced by MyGrammarParser#termino.
 
     def exitTermino(self, ctx: MyGrammarParser.TerminoContext):
         self.term_aux(ctx)
-        print('called term_aux')
         self.term_flag = False
-        print('flag false on exit termino')
-        self.debugExit(ctx)
 
     def term_aux(self, ctx):
-        print('This is term_aux')
         if not self.term_flag:
             if len(POper) > 0:
                 if POper[-1] == '*' or POper[-1] == '/':
@@ -466,13 +464,11 @@ class MyListener(MyGrammarListener):
                             var[left_operand], operator, var[right_operand])
                         if res_type == 'error':
                             errors.bad_type(ctx.start.line)
-                        res = next_temp(res_type)
+                        res = add_temp(res_type, ctx.start.line)
                         quad.append(genQuad.exp(
                             operator, left_operand, right_operand, res))
-                        print(quad)  # DEBUG
                         self.term_flag = True
                         pilaO.append(res)
-        self.debugEnter(ctx)
 
     # Enter a parse tree produced by MyGrammarParser#termino_op.
 
@@ -483,7 +479,6 @@ class MyListener(MyGrammarListener):
             if isinstance(child, TerminalNode):
                 self.term_aux(ctx)
                 POper.append(child.getText())
-        self.debugEnter(ctx)
 
     # Exit a parse tree produced by MyGrammarParser#termino_op.
 
@@ -500,10 +495,9 @@ class MyListener(MyGrammarListener):
             POper_aux = POper.copy()
             pilaO.clear()
             POper.clear()
-            print('--------Recursion start---------')
+            # print('--------Recursion start---------')
             ctx.pilaO_aux = pilaO_aux.copy()
             ctx.POper_aux = POper_aux.copy()
-        self.debugEnter(ctx)
 
     # Exit a parse tree produced by MyGrammarParser#factor.
 
@@ -518,24 +512,40 @@ class MyListener(MyGrammarListener):
             pilaO_aux = pilaO_aux + pilaO
             pilaO = pilaO_aux.copy()
             POper = POper_aux.copy()
-            print('--------Recursion end---------')
+            # print('--------Recursion end---------')
             return
         pilaO.append(ctx.getText())
-        self.debugExit(ctx)
-        print(pilaO)
 
     # Enter a parse tree produced by MyGrammarParser#var_cte.
     def enterVar_cte(self, ctx: MyGrammarParser.Var_cteContext):
+        self.debugEnter(ctx)
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            child = ctx.getChild(0)
+            if var.get(child.getText()):
+                return
+
         if ctx.ID():  # TODO checar si la varaible que piden existe
             pass  # buscarla en el dict var para verificar (con var.get())
-
-    # Exit a parse tree produced by MyGrammarParser#var_cte.
-    def exitVar_cte(self, ctx: MyGrammarParser.Var_cteContext):
-        pass
+        elif ctx.CTE_I():
+            const_type = 'int'
+            address = get_constant_address(const_type, ctx.start.line)
+            var[ctx.CTE_I().getText()] = [const_type, address]
+        elif ctx.CTE_F():
+            const_type = 'float'
+            address = get_constant_address(const_type, ctx.start.line)
+            var[ctx.CTE_F().getText()] = [const_type, address]
+        elif ctx.CTE_B():
+            const_type = 'bool'
+            address = get_constant_address(const_type, ctx.start.line)
+            var[ctx.CTE_B().getText()] = [const_type, address]
+        elif ctx.CTE_STRING():
+            const_type = 'string'
+            address = get_constant_address(const_type, ctx.start.line)
+            var[ctx.CTE_STRING().getText()] = [const_type, address]
 
     def debugEnter(self, ctx):
         # DEBUG
-        print(self.term_flag)
         rule_name = MyGrammarParser.ruleNames[ctx.getRuleIndex()]
         print("entered rule:", rule_name)
         print("Context:", ctx.getText())  # Print the entire context text
@@ -584,12 +594,93 @@ class MyListener(MyGrammarListener):
         print("")
 
 
-def next_temp(res_type):  # TODO skip names, give them "memory address"
+def add_temp(res_type, line):  # former next_temp
     global temp_count
-    name = 't' + str(temp_count)
-    var[name] = res_type
+    global temp_int_count
+    global temp_float_count
+    global temp_bool_count
+    name = temp_count
+    if res_type == 'int':
+        if temp_int_count >= 79999:
+            errors.over_temp_limit(line)
+        address = 70000 + temp_int_count
+        var[name] = [res_type, address]
+        temp_int_count += 1
+    elif res_type == 'float':
+        if temp_float_count >= 89999:
+            errors.over_temp_limit(line)
+        address = 80000 + temp_float_count
+        var[name] = [res_type, address]
+        temp_float_count += 1
+    elif res_type == 'bool':
+        if temp_bool_count >= 99999:
+            errors.over_temp_limit(line)
+        address = 90000 + temp_bool_count
+        var[name] = [res_type, address]
+        temp_bool_count += 1
     temp_count += 1
     return name
+
+
+def clear_temps():
+    will_clear = []
+    for key in var:
+        if type(key) == int:
+            will_clear.append(key)
+
+    for key in will_clear:
+        del var[key]
+
+
+def get_var_address(var_type, line):
+    global int_count
+    global float_count
+    global bool_count
+    if var_type == 'int':
+        if int_count >= 9999:
+            errors.over_var_limit(line, var_type)
+        address = int_count
+        int_count += 1
+    elif var_type == 'float':
+        if float_count >= 19999:
+            errors.over_var_limit(line, var_type)
+        address = float_count
+        float_count += 1
+    elif var_type == 'bool':
+        if bool_count >= 29999:
+            errors.over_var_limit(line, var_type)
+        address = bool_count
+        bool_count += 1
+    return address
+
+
+def get_constant_address(var_type, line):
+    global const_int_count
+    global const_float_count
+    global const_bool_count
+    global const_string_count
+
+    if var_type == 'int':
+        if const_int_count >= 39999:
+            errors.over_const_limit(line, var_type)
+        address = const_int_count
+        const_int_count += 1
+    elif var_type == 'float':
+        if const_float_count >= 49999:
+            errors.over_const_limit(line, var_type)
+        address = const_float_count
+        const_float_count += 1
+    elif var_type == 'bool':
+        if const_bool_count >= 59999:
+            errors.over_const_limit(line, var_type)
+        address = const_bool_count
+        const_bool_count += 1
+    elif var_type == 'string':
+        if const_string_count >= 69999:
+            errors.over_const_limit(line, var_type)
+        address = const_string_count
+        const_string_count += 1
+    return address
 
 
 var = {
@@ -604,10 +695,25 @@ pilaO = []
 
 POper = []
 
-
 quad = []
 
+pila_saltos = []
+
+
+int_count = 1
+float_count = 10001
+bool_count = 20001
+
+const_int_count = 30001
+const_float_count = 40001
+const_bool_count = 50001
+const_string_count = 60001
+
+
 temp_count = 1
+temp_int_count = 70001
+temp_float_count = 80001
+temp_bool_count = 90001
 
 
 def main():
@@ -622,6 +728,7 @@ def main():
     walker.walk(listener, tree)
 
     print(var)
+    print(func)
     count = 1
     for i in quad:
         print(count, ":", i)

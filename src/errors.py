@@ -15,3 +15,21 @@ def bad_type(line):  # TODO change error message
 def asign_bad_type(line, var_type, val_type):
     raise TypeError(
         f'Error at line: {line}. Can not assing {val_type} into a {var_type} variable')
+
+
+def over_temp_limit(line):
+    raise IndexError(
+        f'Error at line: {line}. The limit of temporary variables was surpassed.'
+    )
+
+
+def over_var_limit(line, var_type):
+    raise IndexError(
+        f'Error at line: {line}. The limit of {var_type} variables was surpassed.'
+    )
+
+
+def over_const_limit(line, var_type):
+    raise IndexError(
+        f'Error at line: {line}. The limit of {var_type} constants was surpassed.'
+    )

@@ -1,6 +1,15 @@
 program Test;
-var bool : exp1, exp2; int : a, b, c, d, e, f;
+var bool : exp1, exp2, f;
+int : a, b, c, d, e;
+
 main()
 {
-    exp1 = a * b * c + d - e * f > (f * b / (e + d)) - (a + b) / c and c >= b;
+    if (a > b or (c + d) == e and f)
+    {
+        a = 2;
+    }
+    else 
+    {
+        b = 1;
+    }
 }

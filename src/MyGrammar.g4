@@ -51,16 +51,16 @@ while_loop: 'while' '(' expresion ')' bloque;
 expresion: exp_super;
 
 exp_super: exp_cond exp_super_op;
-exp_super_op: 'and' exp_cond | 'or' exp_cond |;
+exp_super_op: 'and' exp_super | 'or' exp_super |;
 
 exp_cond: exp exp_cond_op;
 exp_cond_op:
-	'>' exp
-	| '<' exp
-	| '>=' exp
-	| '<=' exp
-	| '==' exp
-	| '!=' exp
+	'>' exp_cond
+	| '<' exp_cond
+	| '>=' exp_cond
+	| '<=' exp_cond
+	| '==' exp_cond
+	| '!=' exp_cond
 	|;
 
 exp: termino exp_op;
