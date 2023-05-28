@@ -15,6 +15,7 @@ class MyListener(MyGrammarListener):
         self.exp_flag = False
         self.exp_cond_flag = False
         self.exp_super_flag = False
+        self.if_quad_move_stack = []
 
     # Enter a parse tree produced by MyGrammarParser#programa.
     def enterPrograma(self, ctx: MyGrammarParser.ProgramaContext):
@@ -25,7 +26,7 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#programa.
     def exitPrograma(self, ctx: MyGrammarParser.ProgramaContext):
-        pass
+        quad.append(genQuad.end())
 
         # Enter a parse tree produced by MyGrammarParser#func.
     def enterFunc(self, ctx: MyGrammarParser.FuncContext):
@@ -256,18 +257,82 @@ class MyListener(MyGrammarListener):
     # Enter a parse tree produced by MyGrammarParser#condicion.
 
     def enterCondicion(self, ctx: MyGrammarParser.CondicionContext):
-        self.debugEnter(ctx)
+        pass
 
     # Exit a parse tree produced by MyGrammarParser#condicion.
     def exitCondicion(self, ctx: MyGrammarParser.CondicionContext):
-        self.debugExit(ctx)
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#cond_bloque.
+    def enterCond_bloque(self, ctx: MyGrammarParser.Cond_bloqueContext):
+        '''
+        Tenia que partir la regla de if antes del bloque para poder
+        poner el punto neural que va despues de la expresion.
+        Para eso es esta regla.
+        '''
+        if_res = pilaO.pop(-1)
+        if var[if_res][0] != 'bool':
+            errors.bad_type(ctx.start.line)
+        quad.append(genQuad.gotof(if_res))
+        PJumps.append(len(quad) - 1)
+        self.debugEnter(ctx)
+        print(var[if_res])
 
     # Enter a parse tree produced by MyGrammarParser#cond_else.
     def enterCond_else(self, ctx: MyGrammarParser.Cond_elseContext):
+        '''
+        Al llegar a esta regla, pueden pasar 2 cosas
+        1. Esta siempre va a ocurrir, ponerle al GOTOF el resultado
+        de la expresion del if y agregar tambien a donde tiene que
+        saltar.
+        2. Si hay else, se genera el GOTO del else y se guarda el
+        index del cuadruplo para despues llenarlo.
+        '''
+        bread_crumb = PJumps.pop(-1)
+
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            quad.append(genQuad.goto())
+            PJumps.append(len(quad) - 1)
+
+        quad[bread_crumb][3] = len(quad)
         self.debugEnter(ctx)
 
     # Exit a parse tree produced by MyGrammarParser#cond_else.
     def exitCond_else(self, ctx: MyGrammarParser.Cond_elseContext):
+        '''
+        Si hubo else (se si tuvo else si el numero de hijos es mayor a 0)
+        llenamos el GOTO con el cuadruplo que sigue.
+        '''
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            bread_crumb = PJumps.pop(-1)
+            quad[bread_crumb][3] = len(quad)
+
+    def enterWhile_loop(self, ctx: MyGrammarParser.While_loopContext):
+        PJumps.append(len(quad))  # TODO check this jump
+        self.debugEnter(ctx)
+
+    # Exit a parse tree produced by MyGrammarParser#while_loop.
+    def exitWhile_loop(self, ctx: MyGrammarParser.While_loopContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#while_bloque.
+    def enterWhile_bloque(self, ctx: MyGrammarParser.While_bloqueContext):
+        while_res = pilaO.pop(-1)
+        if var[while_res][0] != 'bool':
+            errors.bad_type(ctx.start.line)
+        quad.append(genQuad.gotof(while_res))
+        PJumps.append(len(quad) - 1)
+        self.debugEnter(ctx)
+
+    # Exit a parse tree produced by MyGrammarParser#while_bloque.
+
+    def exitWhile_bloque(self, ctx: MyGrammarParser.While_bloqueContext):
+        goto_false_crumb = PJumps.pop(-1)
+        goto_crumb = PJumps.pop(-1)
+        quad.append(genQuad.goto(goto_crumb))
+        quad[goto_false_crumb][3] = len(quad)
         self.debugExit(ctx)
 
     # Enter a parse tree produced by MyGrammarParser#escritura.
@@ -461,11 +526,11 @@ class MyListener(MyGrammarListener):
                         left_operand = pilaO.pop(-1)
                         operator = POper.pop(-1)
                         res_type = return_type(
-                            var[left_operand], operator, var[right_operand])
+                            var[left_operand][0], operator, var[right_operand][0])
                         if res_type == 'error':
                             errors.bad_type(ctx.start.line)
                         res = add_temp(res_type, ctx.start.line)
-                        quad.append(genQuad.exp(
+                        quad.append(genQuad.exp(  # TODO cambiar a direcciones tambien res
                             operator, left_operand, right_operand, res))
                         self.term_flag = True
                         pilaO.append(res)
@@ -566,11 +631,12 @@ class MyListener(MyGrammarListener):
             print("No next rule.")
         print(pilaO)
         print(POper)
+        print(PJumps)
+        print(quad)
         print("")
 
     def debugExit(self, ctx):
         # DEBUG
-        print(self.term_flag)
         rule_name = MyGrammarParser.ruleNames[ctx.getRuleIndex()]
         print("exited rule:", rule_name)
         print("Context:", ctx.getText())  # Print the entire context text
@@ -591,6 +657,8 @@ class MyListener(MyGrammarListener):
             print("No next rule.")
         print(pilaO)
         print(POper)
+        print(PJumps)
+        print(quad)
         print("")
 
 
@@ -697,7 +765,7 @@ POper = []
 
 quad = []
 
-pila_saltos = []
+PJumps = []
 
 
 int_count = 1
@@ -729,7 +797,7 @@ def main():
 
     print(var)
     print(func)
-    count = 1
+    count = 0
     for i in quad:
         print(count, ":", i)
         count += 1

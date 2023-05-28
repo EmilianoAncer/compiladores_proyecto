@@ -35,7 +35,8 @@ estatuto:
 
 asignacion: ID '=' expresion ';';
 
-condicion: 'if' '(' expresion ')' bloque cond_else;
+condicion: 'if' '(' expresion ')' cond_bloque;
+cond_bloque: bloque cond_else;
 cond_else: 'else' bloque |;
 
 escritura: 'print' '(' print_def ')' ';';
@@ -46,7 +47,8 @@ func_call: ID '(' func_call_params ')' ';';
 func_call_params: expresion f_c_params_extra |;
 f_c_params_extra: ',' expresion f_c_params_extra |;
 
-while_loop: 'while' '(' expresion ')' bloque;
+while_loop: 'while' '(' expresion ')' while_bloque;
+while_bloque: bloque;
 
 expresion: exp_super;
 

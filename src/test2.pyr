@@ -4,12 +4,12 @@ int : a, b, c, d, e;
 
 main()
 {
-    if (a > b or (c + d) == e and f)
+    while(a + b > b)
     {
         a = 2;
-    }
-    else 
-    {
-        b = 1;
+        while(c + c == d * 2)
+        {
+            e = e * 2;
+        }
     }
 }
