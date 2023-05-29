@@ -41,6 +41,9 @@ Batalle para entender como funcionaba la libreria, pero haber hecho las tablas m
 2. Se agrego la gramatica de funciones, tabla y funcionalidad de tabla de funciones.
 <br/><br/>
 
+## Avance 28 de mayo
+Es el avance mas grande que he hecho en el proyecto, aun no estoy al corriente, pero me acerque bastante, mi codigo intermedio ya gerera cuadruplos correctamente, para todo tipo de expresion, if, if con else, while y decalaracion de funciones, a principios de esta semana acabare los cuadruplos para las llamadas de funciones y tambien para los arreglos y matrices. a finales de semana empezare a programar la maquina virtual.
+
 
 ## Testing
 Para poder hacer testing de las grammars se necesitan las herramientas de ANTLR4.

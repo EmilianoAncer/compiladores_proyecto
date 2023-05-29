@@ -4,7 +4,8 @@ program Test;
 def int func1(int param1, float param2, bool param3)
 var int : funcTest1, funcTest2; float : funcTest3;
 {
-    return 2;
+    funcTest2 = funcTest1 + funcTest1;
+    return funcTest2;
 }
 
 def void func2()
