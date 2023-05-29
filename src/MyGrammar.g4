@@ -4,11 +4,12 @@ options {
 	language = Python3;
 }
 
-programa: 'program' ID ';' var func 'main()' bloque;
+programa: 'program' ID ';' func 'main()' var bloque;
 
 func: 'def' func_init |;
 func_init:
-	func_tipo ID '(' parameters ')' var bloque extra_func;
+	func_tipo ID '(' parameters ')' var func_bloque extra_func;
+func_bloque: bloque;
 extra_func: func |;
 parameters: tipo ID extra_parameter |;
 extra_parameter: ',' tipo ID extra_parameter |;
@@ -31,7 +32,8 @@ estatuto:
 	| condicion
 	| escritura
 	| func_call
-	| while_loop;
+	| while_loop
+	| return_call;
 
 asignacion: ID '=' expresion ';';
 
@@ -49,6 +51,8 @@ f_c_params_extra: ',' expresion f_c_params_extra |;
 
 while_loop: 'while' '(' expresion ')' while_bloque;
 while_bloque: bloque;
+
+return_call: 'return' expresion ';';
 
 expresion: exp_super;
 
@@ -73,12 +77,13 @@ termino_op: '*' termino | '/' termino |;
 
 factor: var_cte | '(' expresion ')';
 
-var_cte: ID | CTE_I | CTE_F | CTE_B | CTE_STRING;
+var_cte: CTE_STRING | CTE_I | CTE_F | CTE_B | ID;
 
 ID: [a-zA-Z_] [a-zA-Z_0-9]*;
 CTE_I: [0-9]+;
 CTE_F: [0-9]+ ('.' [0-9]*)? ([eE][+-]? [0-9]+)?;
-CTE_B: 'true' | 'false';
 CTE_STRING: '"' (~'"')* '"';
+//TODO delete CTE_B will get delt with in interCode
+CTE_B: 'true' | 'false';
 
 SPACES: [ \t\r\n]+ -> skip;

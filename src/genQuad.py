@@ -16,3 +16,7 @@ def goto(pos=None):
 
 def end():
     return ['END', None, None, None]
+
+
+def end_func():
+    return ['ENDFUNC', None, None, None]

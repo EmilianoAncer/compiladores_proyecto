@@ -1,10 +1,10 @@
 program Test;
-var int : test1, test2; float : test3;
 
 def int func1(int param1,  float param2, bool param3)
 var int : funcTest1, funcTest2; float : funcTest3;
 {
     print(a);
+    return a
 }
 
 def void func2()
@@ -12,13 +12,14 @@ def void func2()
     print(a+b);
 }
 main()
+var int : test1, test2; float : test3;
 {
     test1 = 12;
     test3 = 0.0;
     test2 = 2*2;
     test4 = a+b*c-(c/d)
 
-    func1(2, 3.0, True)
+    x = func1(2, 3.0, True)
 
     if(2 > 0)
     {

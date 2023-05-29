@@ -1,15 +1,24 @@
 program Test;
-var bool : exp1, exp2, f;
-int : a, b, c, d, e;
+
+
+def int func1(int param1, float param2, bool param3)
+var int : funcTest1, funcTest2; float : funcTest3;
+{
+    return 2;
+}
+
+def void func2()
+var int: a;
+{
+    while (2 > 3)
+    {
+
+    }
+}
 
 main()
-{
-    while(a + b > b)
-    {
-        a = 2;
-        while(c + c == d * 2)
-        {
-            e = e * 2;
-        }
-    }
+var bool : exp1, exp2, f;
+int : a, b, c, d, e;
+{   
+    a = 2;
 }
