@@ -42,7 +42,19 @@ Batalle para entender como funcionaba la libreria, pero haber hecho las tablas m
 <br/><br/>
 
 ## Avance 28 de mayo
-Es el avance mas grande que he hecho en el proyecto, aun no estoy al corriente, pero me acerque bastante, mi codigo intermedio ya gerera cuadruplos correctamente, para todo tipo de expresion, if, if con else, while y decalaracion de funciones, a principios de esta semana acabare los cuadruplos para las llamadas de funciones y tambien para los arreglos y matrices. a finales de semana empezare a programar la maquina virtual.
+Este ha sido mi avance mas grande al proyecto, al fin emepece con la generacion de cuadruplos en el codigo intermedio. En este avance hice que se generaran cuadruplos para:<br/><br/>
+1. Expresiones - Aritmeticos, logicos, relacionales y expresiones con parentesis.
+2. Asignamiento - Se puede asignar a una variable expresiones, variables y constantes.
+3. Condicionales - Se generan cuadruplos para if e if else.
+4. Ciclos - Se generan cuadruplos para ciclo while.
+5. Funciones - Por el momento solo genero cuadruplos para la declaracion de variables, me falta agregar la llamada de funciones.<br/><br/>
+Los ifs y whiles funcionan si esta anidados.<br/><br/>
+Lo que me falta: <br/><br/>
+Como puse arriba me falta llamada de funciones y tambien me falta arreglos y matrices, hablando de generacion de cuadruplos. La VM tampoco la he empezado y ya doy varios errores al usuario, pero me falta verificar varias cosas mas.
+
+#### Commits
+Lo agregare despues, son muchos.
+
 
 
 ## Testing
@@ -53,13 +65,9 @@ Para poder hacer testing de las grammars se necesitan las herramientas de ANTLR4
    ```
 2. Correr el script runGrammar.py
    ```
-    $ python3 runGramar.py
+    $ python3 codigoIntermedio.py
    ```
-3. Para ver los tockens en la terminal (Esto ya no funciona)
+3. Para cambiar el archivo sobre el cual se hacen pruebas.<br/><br/>
+   En el archivo codigoIntermedio.py, en la funcion main(). Cambiar el nombre de archivo entre comillas al nuevo archivo. 
    ```
-    $ grun MyGrammar programa -tokens ../test.pyr
-   ```
-   Para ver la estructura de una manera grafica en un arbol
-   ```
-    $ grun MyGrammar programa -gui ../test.pyr
-   ```
+    input_stream = FileStream("test2.pyr")
