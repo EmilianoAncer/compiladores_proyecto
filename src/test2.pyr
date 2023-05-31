@@ -1,25 +1,24 @@
 program Test;
 
 
-def int func1(int param1, float param2, bool param3)
+def int func1(int param1, float param2, int param3)
 var int : funcTest1, funcTest2; float : funcTest3;
 {
     funcTest2 = funcTest1 + funcTest1;
     return funcTest2;
 }
 
-def void func2()
-var int: a;
+def void func2(int a)
+var int: b;
 {
-    while (2 > 3)
-    {
-
-    }
+    a = a + b;
 }
 
 main()
 var bool : exp1, exp2, f;
 int : a, b, c, d, e;
+float : z; 
 {   
-    a = 2;
+    func1(a + b, z, c);
+    func2(a);
 }

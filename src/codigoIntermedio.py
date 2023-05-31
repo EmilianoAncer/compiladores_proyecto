@@ -18,6 +18,8 @@ class MyListener(MyGrammarListener):
         self.if_quad_move_stack = []
         self.context = None
         self.which_func = [None, None]
+        self.param_counter = 0
+        self.func_call_ID = None
 
     # Enter a parse tree produced by MyGrammarParser#programa.
     def enterPrograma(self, ctx: MyGrammarParser.ProgramaContext):
@@ -33,7 +35,6 @@ class MyListener(MyGrammarListener):
 
         # Enter a parse tree produced by MyGrammarParser#func.
     def enterFunc(self, ctx: MyGrammarParser.FuncContext):
-        self.debugEnter(ctx)
         var.clear()
         pilaO.clear()
         POper.clear()
@@ -42,8 +43,8 @@ class MyListener(MyGrammarListener):
     # Exit a parse tree produced by MyGrammarParser#func.
 
     def exitFunc(self, ctx: MyGrammarParser.FuncContext):
-        self.debugExit(ctx)
         self.context = 'global'
+        self.which_func = ['main', 'void']
 
     # Enter a parse tree produced by MyGrammarParser#func_init.
     def enterFunc_init(self, ctx: MyGrammarParser.Func_initContext):
@@ -60,26 +61,23 @@ class MyListener(MyGrammarListener):
         func[func_name]['return'] = None
         func[func_name]['start'] = None
         func[func_name]['var'] = {}
+        func[func_name]['params'] = []
         func[func_name]['num_param'] = 0
         func[func_name]['num_temp'] = 0
         func[func_name]['num_var'] = 0
-        self.debugEnter(ctx)
 
     # Exit a parse tree produced by MyGrammarParser#func_init.
     def exitFunc_init(self, ctx: MyGrammarParser.Func_initContext):
-        self.debugExit(ctx)
         pass
 
     # Enter a parse tree produced by MyGrammarParser#func_bloque.
     def enterFunc_bloque(self, ctx: MyGrammarParser.Func_bloqueContext):
-        self.debugEnter(ctx)
         func[self.which_func[0]]['num_var'] = (
             len(var) + len(cte)) - func[self.which_func[0]]['num_param']
         func[self.which_func[0]]['start'] = len(quad)
 
     # Exit a parse tree produced by MyGrammarParser#func_bloque.
     def exitFunc_bloque(self, ctx: MyGrammarParser.Func_bloqueContext):
-        self.debugExit(ctx)
         global temps_in_func
         # TODO probably delete this
         func[self.which_func[0]]['var'] = var.copy()
@@ -90,15 +88,20 @@ class MyListener(MyGrammarListener):
         quad.append(genQuad.end_func())
         func[self.which_func[0]]['num_temp'] = temps_in_func
         temps_in_func = 0
+        cont = 0
+        for param in func[self.which_func[0]]['params']:
+            cont += 1
+            value = func[self.which_func[0]]['var'][param]
+            new_key = str(cont) + 'p'
+            func[self.which_func[0]]['var'][new_key] = value
+            del func[self.which_func[0]]['var'][param]
 
     # Enter a parse tree produced by MyGrammarParser#extra_func.
     def enterExtra_func(self, ctx: MyGrammarParser.Extra_funcContext):
-        self.debugEnter(ctx)
         pass
 
     # Exit a parse tree produced by MyGrammarParser#extra_func.
     def exitExtra_func(self, ctx: MyGrammarParser.Extra_funcContext):
-        self.debugExit(ctx)
         pass
 
     # Enter a parse tree produced by MyGrammarParser#parameters.
@@ -110,11 +113,12 @@ class MyListener(MyGrammarListener):
                 if not ctx.ID():
                     errors.no_param_id(ctx.start.line)
 
-                id = ctx.ID().getText()
                 func_name = self.which_func[0]
+                func[func_name]['num_param'] += 1
+                id = ctx.ID().getText()
+                func[func_name]['params'].append(id)
                 var[id] = [type, get_var_address(
                     type, ctx.start.line, self.context)]
-                func[func_name]['num_param'] += 1
             else:
                 errors.no_param_type(ctx.start.line)
 
@@ -128,14 +132,15 @@ class MyListener(MyGrammarListener):
         if num_children > 0:
             if ctx.tipo():
                 type = ctx.tipo().getText()
-                id = ctx.ID().getText()
                 if not ctx.ID():
                     errors.no_param_id(ctx.start.line)
 
                 func_name = self.which_func[0]
+                func[func_name]['num_param'] += 1
+                id = id = ctx.ID().getText()
+                func[func_name]['params'].append(id)
                 var[id] = [type, get_var_address(
                     type, ctx.start.line, self.context)]
-                func[func_name]['num_param'] += 1
             else:
                 errors.no_param_type(ctx.start.line)
 
@@ -153,6 +158,8 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#var.
     def enterVar(self, ctx: MyGrammarParser.VarContext):
+        if self.context == 'global':
+            quad[0][3] = len(quad)
         pass
 
     # Exit a parse tree produced by MyGrammarParser#var.
@@ -278,7 +285,6 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#asignacion.
     def exitAsignacion(self, ctx: MyGrammarParser.AsignacionContext):
-        self.debugExit(ctx)
         var_id = ctx.ID().getText()
         if len(pilaO) > 0:
             res = pilaO.pop(-1)
@@ -353,6 +359,74 @@ class MyListener(MyGrammarListener):
     def exitWhile_loop(self, ctx: MyGrammarParser.While_loopContext):
         pass
 
+        # Enter a parse tree produced by MyGrammarParser#func_call.
+    def enterFunc_call(self, ctx: MyGrammarParser.Func_callContext):
+        self.debugEnter(ctx)
+        if ctx.ID():
+            if func.get(ctx.ID().getText()):
+                self.param_counter = 0
+                self.func_call_ID = ctx.ID().getText()
+                quad.append(genQuad.func_call(ctx.ID().getText()))
+            else:
+                errors.func_not_init(ctx.start.line, ctx.ID().getText())
+
+    # Exit a parse tree produced by MyGrammarParser#func_call.
+    def exitFunc_call(self, ctx: MyGrammarParser.Func_callContext):
+        self.debugExit(ctx)
+        if self.param_counter != func[self.func_call_ID]['num_param']:
+            errors.bad_param_number(
+                ctx.start.line, func[self.func_call_ID]['num_param'], self.param_counter)
+        quad.append(genQuad.gosub(self.func_call_ID,
+                    func[self.func_call_ID]['start']))
+        pass
+
+        # Enter a parse tree produced by MyGrammarParser#func_call_params.
+    def enterFunc_call_params(self, ctx: MyGrammarParser.Func_call_paramsContext):
+        self.debugEnter(ctx)
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#func_call_params.
+    def exitFunc_call_params(self, ctx: MyGrammarParser.Func_call_paramsContext):
+        self.debugExit(ctx)
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#f_c_params_extra.
+    def enterF_c_params_extra(self, ctx: MyGrammarParser.F_c_params_extraContext):
+        self.debugEnter(ctx)
+        if len(pilaO) > 0:
+            self.param_counter += 1
+            param_aux = pilaO.pop(-1)
+            if var.get(param_aux):
+                param_aux = var[param_aux]
+            else:
+                param_aux = cte[param_aux]
+            init_param_name = str(self.param_counter) + 'p'
+            if func[self.func_call_ID]['var'][init_param_name][0] == param_aux[0]:
+                quad.append(genQuad.func_param(param_aux[1], init_param_name))
+            else:
+                errors.bad_param_type(
+                    ctx.start.line, param_aux[0], func[self.func_call_ID]['var'][init_param_name][0])
+            self.param_waiting = False
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#f_c_params_extra.
+    def exitF_c_params_extra(self, ctx: MyGrammarParser.F_c_params_extraContext):
+        self.debugExit(ctx)
+
+        '''if len(pilaO) > 0:
+            param_aux = pilaO.pop(-1)
+            if var.get(param_aux):
+                param_aux = var[param_aux]
+            else:
+                param_aux = cte[param_aux]
+            init_param_name = str(self.param_counter) + 'p'
+            if func[self.func_call_ID]['var'][init_param_name][0] == param_aux[0]:
+                quad.append(genQuad.func_param(param_aux[1], init_param_name))
+            else:
+                errors.bad_param_type(
+                    ctx.start.line, param_aux[0], func[self.func_call_ID]['var'][init_param_name][0])'''
+        pass
+
     # Enter a parse tree produced by MyGrammarParser#while_bloque.
     def enterWhile_bloque(self, ctx: MyGrammarParser.While_bloqueContext):
         while_res = pilaO.pop(-1)
@@ -375,7 +449,6 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#return_call.
     def exitReturn_call(self, ctx: MyGrammarParser.Return_callContext):
-        self.debugExit(ctx)
         num_children = ctx.getChildCount()
         if num_children > 0:
             if self.which_func[1] == 'void':
@@ -858,6 +931,9 @@ def get_var_address(var_type, line, where):
     global int_count
     global float_count
     global bool_count
+    global int_count_func
+    global float_count_func
+    global bool_count_func
     if where == 'global':
         if var_type == 'int':
             if int_count >= 9999:
@@ -877,20 +953,20 @@ def get_var_address(var_type, line, where):
         return address
     else:
         if var_type == 'int':
-            if int_count >= 109999:
+            if int_count_func >= 109999:
                 errors.over_var_limit(line, var_type)
             address = int_count_func
-            int_count += 1
+            int_count_func += 1
         elif var_type == 'float':
-            if float_count >= 129999:
+            if float_count_func >= 129999:
                 errors.over_var_limit(line, var_type)
             address = float_count_func
-            float_count += 1
+            float_count_func += 1
         elif var_type == 'bool':
-            if bool_count >= 139999:
+            if bool_count_func >= 139999:
                 errors.over_var_limit(line, var_type)
             address = bool_count_func
-            bool_count += 1
+            bool_count_func += 1
         return address
 
 

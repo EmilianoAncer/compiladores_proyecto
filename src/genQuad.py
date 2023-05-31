@@ -20,3 +20,15 @@ def end():
 
 def end_func():
     return ['ENDFUNC', None, None, None]
+
+
+def func_call(func_id):
+    return ['ERA', func_id, None, None]
+
+
+def func_param(value, param_num):
+    return ['PARAM', value, None, param_num]
+
+
+def gosub(func_id, func_start):
+    return ['GOSUB', func_id, None, func_start]
