@@ -4,7 +4,7 @@ options {
 	language = Python3;
 }
 
-programa: 'program' ID ';' func 'main()' var bloque;
+programa: 'program' ID ';' func 'main()' var arr bloque;
 
 func: 'def' func_init |;
 func_init:
@@ -21,6 +21,11 @@ var_init: tipo ':' ID extra_vars ';' new_type;
 extra_vars: ',' ID extra_vars |;
 new_type: var_init |;
 
+arr: 'arr' arr_init |;
+arr_init: tipo ':' ID '[' CTE_I ']' extra_arrs ';' new_arr_type;
+extra_arrs: ',' ID '[' CTE_I ']' extra_arrs |;
+new_arr_type: arr_init |;
+
 tipo: 'int' | 'float' | 'bool';
 
 bloque: '{' bloque_init '}' |;
@@ -33,7 +38,8 @@ estatuto:
 	| escritura
 	| func_call
 	| while_loop
-	| return_call;
+	| return_call
+	| lectura;
 
 asignacion: ID '=' expresion ';';
 
@@ -45,7 +51,11 @@ escritura: 'print' '(' print_def ')' ';';
 print_def: expresion print_extra;
 print_extra: ',' expresion print_extra |;
 
-func_call: ID '(' func_call_params ')' ';';
+lectura: ID '=' 'read' '(' CTE_STRING ')' ';';
+
+func_call:
+	ID '(' func_call_params ')' ';'
+	| ID '(' func_call_params ')';
 func_call_params: expresion f_c_params_extra |;
 f_c_params_extra: ',' expresion f_c_params_extra |;
 
@@ -75,7 +85,7 @@ exp_op: '+' exp | '-' exp |;
 termino: factor termino_op;
 termino_op: '*' termino | '/' termino |;
 
-factor: var_cte | '(' expresion ')';
+factor: var_cte | '(' expresion ')' | func_call;
 
 var_cte: CTE_STRING | CTE_I | CTE_F | CTE_B | ID;
 

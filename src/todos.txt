@@ -1,0 +1,2 @@
+agregar error en ejecucion para cuando se usa una variable que no tiene valor
+

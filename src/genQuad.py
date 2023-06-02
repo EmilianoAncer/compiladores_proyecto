@@ -32,3 +32,7 @@ def func_param(value, param_num):
 
 def gosub(func_id, func_start):
     return ['GOSUB', func_id, None, func_start]
+
+
+def ret(ret_address):
+    return ['RETURN', None, None, ret_address]
