@@ -5,5 +5,5 @@ main()
 var int : a, b, c;
 
 {   
-    a = b + 3;
+    print("hola", "como", "estas", a, 8, a+8);
 }

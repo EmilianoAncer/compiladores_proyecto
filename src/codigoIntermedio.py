@@ -81,7 +81,6 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#func_bloque.
     def enterFunc_bloque(self, ctx: MyGrammarParser.Func_bloqueContext):
-        self.debugEnter(ctx)
         func[self.which_func[0]]['num_var'] = (
             len(var) + len(cte)) - func[self.which_func[0]]['num_param']
         func[self.which_func[0]]['start'] = len(quad)
@@ -97,7 +96,6 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#func_bloque.
     def exitFunc_bloque(self, ctx: MyGrammarParser.Func_bloqueContext):
-        self.debugExit(ctx)
         global temps_in_func
 
         var.clear()
@@ -179,11 +177,6 @@ class MyListener(MyGrammarListener):
                     return_var = func[key]['return'].copy()
                     for key2 in return_var:
                         return_key = key2
-
-                    '''if return_var[return_key][1] >= 30000 and return_var[return_key][1] <= 69999:
-                        if not cte.get(return_key):
-                            cte[return_key] = return_var[return_key].copy()
-                    else:'''
                     if not var.get(return_key):
                         var[return_key] = return_var[return_key].copy()
         pass
@@ -204,23 +197,6 @@ class MyListener(MyGrammarListener):
         var[var_ID] = [type, get_var_address(
             type, ctx.start.line, self.context)]
         ctx.tipo_ = type
-        '''else:
-            type = ctx.tipo().getText()
-            id = ctx.ID().getText()
-            func_name = self.which_func[0]
-            if func[func_name]['var'].get(id):
-                curr_line = ctx.start.line
-                errors.same_variable_init(curr_line, id)
-
-            func[func_name]['var'][id] = [
-                type, get_var_address(type, ctx.start.line)]
-            func[func_name]['num_var'][type] += 1
-            # TODO test this delete it
-            if func[func_name]['num_var'].get(type):
-                func[func_name]['num_var'][type] += 1
-            else:
-                func[func_name]['num_var'][type] = 0'''
-        # ctx.tipo_ = type
 
     # Exit a parse tree produced by MyGrammarParser#var_init.
 
@@ -238,18 +214,6 @@ class MyListener(MyGrammarListener):
 
             var[var_ID] = [type, get_var_address(
                 type, ctx.start.line, self.context)]
-        '''else:
-            type = ctx.parentCtx.tipo_
-            if ctx.ID():
-                id = ctx.ID().getText()
-                func_name = self.which_func[0]
-                if func[func_name]['var'].get(id):
-                    curr_line = ctx.start.line
-                    errors.same_variable_init(curr_line, id)
-
-                func[func_name]['var'][id] = [
-                    type, get_var_address(type, ctx.start.line)]
-                func[func_name]['num_var'][type] += 1'''
         ctx.tipo_ = ctx.parentCtx.tipo_
 
     # Exit a parse tree produced by MyGrammarParser#extra_vars.
@@ -311,10 +275,10 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#asignacion.
     def exitAsignacion(self, ctx: MyGrammarParser.AsignacionContext):
-        self.debugExit(ctx)
         var_id = ctx.ID().getText()
+        if not var.get(var_id):
+            errors.var_not_initialized(ctx.start.line, var_id)
         if len(pilaO) > 0:
-            # debug
             res = pilaO.pop(-1)
             '''
             Probablemente cambiar esto de abajo, la manera mas facil que veo de hacerlo es, cuando se acaba una init de funcion con return, meter una temporal a la 
@@ -322,15 +286,6 @@ class MyListener(MyGrammarListener):
             la tabla de funciones, al mismo tiempo si lo tendre en la tabla de funciones para saber cual es inicialmente, pero la version que estara en la global sera para reglas de despues
             como assign, expresion o recursion
             '''
-            '''if isinstance(res, list):
-                if var[var_id][0] == res[0]:
-                    quad.append(genQuad.asign(var[var_id][1], res[1]))
-                else:
-                    curr_line = ctx.start.line
-                    errors.asign_bad_type(
-                        curr_line, var[var_id][0], res[0])
-            else:'''
-            print(res)
             if var.get(res):
                 res_aux = var[res]
             else:
@@ -405,7 +360,6 @@ class MyListener(MyGrammarListener):
 
         # Enter a parse tree produced by MyGrammarParser#func_call.
     def enterFunc_call(self, ctx: MyGrammarParser.Func_callContext):
-        self.debugEnter(ctx)
         if ctx.ID():
             if func.get(ctx.ID().getText()):
                 self.param_counter = 0
@@ -416,7 +370,6 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#func_call.
     def exitFunc_call(self, ctx: MyGrammarParser.Func_callContext):
-        self.debugExit(ctx)
         if self.param_counter != func[self.func_call_ID]['num_param']:
             errors.bad_param_number(
                 ctx.start.line, func[self.func_call_ID]['num_param'], self.param_counter)
@@ -430,17 +383,14 @@ class MyListener(MyGrammarListener):
 
         # Enter a parse tree produced by MyGrammarParser#func_call_params.
     def enterFunc_call_params(self, ctx: MyGrammarParser.Func_call_paramsContext):
-        self.debugEnter(ctx)
         pass
 
     # Exit a parse tree produced by MyGrammarParser#func_call_params.
     def exitFunc_call_params(self, ctx: MyGrammarParser.Func_call_paramsContext):
-        self.debugExit(ctx)
         pass
 
     # Enter a parse tree produced by MyGrammarParser#f_c_params_extra.
     def enterF_c_params_extra(self, ctx: MyGrammarParser.F_c_params_extraContext):
-        self.debugEnter(ctx)
         if len(pilaO) > 0:
             self.param_counter += 1
             param_aux = pilaO.pop(-1)
@@ -459,7 +409,6 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#f_c_params_extra.
     def exitF_c_params_extra(self, ctx: MyGrammarParser.F_c_params_extraContext):
-        self.debugExit(ctx)
         pass
 
     # Enter a parse tree produced by MyGrammarParser#while_bloque.
@@ -512,26 +461,72 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#escritura.
     def enterEscritura(self, ctx: MyGrammarParser.EscrituraContext):
-        pass
+        self.debugEnter(ctx)
 
     # Exit a parse tree produced by MyGrammarParser#escritura.
+
     def exitEscritura(self, ctx: MyGrammarParser.EscrituraContext):
-        pass
+        self.debugExit(ctx)
+        if len(pilaO) > 0:
+            print_part = pilaO.pop(-1)
+            if var.get(print_part):
+                quad.append(genQuad.write_part(var[print_part][1]))
+            else:
+                quad.append(genQuad.write_part(cte[print_part][1]))
+        quad.append(genQuad.write_end())
 
     # Enter a parse tree produced by MyGrammarParser#print_def.
     def enterPrint_def(self, ctx: MyGrammarParser.Print_defContext):
-        pass
+        self.debugEnter(ctx)
+        quad.append(genQuad.write_start())
 
     # Exit a parse tree produced by MyGrammarParser#print_def.
+
     def exitPrint_def(self, ctx: MyGrammarParser.Print_defContext):
+        self.debugExit(ctx)
         pass
 
     # Enter a parse tree produced by MyGrammarParser#print_extra.
     def enterPrint_extra(self, ctx: MyGrammarParser.Print_extraContext):
+        self.debugEnter(ctx)
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            print_part = pilaO.pop(-1)
+            if var.get(print_part):
+                quad.append(genQuad.write_part(var[print_part][1]))
+            else:
+                quad.append(genQuad.write_part(cte[print_part][1]))
+
+            if ctx.expresion():
+                print('im an expresion')
         pass
 
     # Exit a parse tree produced by MyGrammarParser#print_extra.
     def exitPrint_extra(self, ctx: MyGrammarParser.Print_extraContext):
+        self.debugExit(ctx)
+        '''num_children = ctx.getChildCount()
+        if num_children > 0:
+            print_part = pilaO.pop(-1)
+            if var.get(print_part):
+                quad.append(genQuad.write_part(var[print_part][1]))
+            else:
+                quad.append(genQuad.write_part(cte[print_part][1]))'''
+
+    # Enter a parse tree produced by MyGrammarParser#lectura.
+    def enterLectura(self, ctx: MyGrammarParser.LecturaContext):
+        if not var.get(ctx.ID().getText()):
+            errors.var_not_initialized(ctx.start.line, ctx.ID().getText())
+
+        if ctx.CTE_STRING():
+            const_type = 'string'
+            address = get_constant_address(const_type, ctx.start.line)
+            cte[ctx.CTE_STRING().getText()] = [const_type, address]
+            quad.append(genQuad.write(cte[ctx.CTE_STRING().getText()][1]))
+
+        quad.append(genQuad.read(var[ctx.ID().getText()][1]))
+
+    # Exit a parse tree produced by MyGrammarParser#lectura.
+    def exitLectura(self, ctx: MyGrammarParser.LecturaContext):
         pass
 
     # Enter a parse tree produced by MyGrammarParser#expresion.
@@ -668,10 +663,12 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#exp.
     def enterExp(self, ctx: MyGrammarParser.ExpContext):
+        self.debugEnter(ctx)
         pass
 
     # Exit a parse tree produced by MyGrammarParser#exp.
     def exitExp(self, ctx: MyGrammarParser.ExpContext):
+        self.debugExit(ctx)
         '''
         Punto numero 4 del diagrama de expresiones,
         si enterExp_op no corre la funcion, se correra aqui 
@@ -680,7 +677,6 @@ class MyListener(MyGrammarListener):
         self.exp_flag = False
 
     def exp_aux(self, ctx):
-        self.debugEnter(ctx)
         """Funcion intermediaria entre enterExp_op y exitExp,
         simula el punto 4 del diagrama de expresiones.
         Checa con el cubo semantico el tipo de resultado y genera
@@ -695,7 +691,6 @@ class MyListener(MyGrammarListener):
                 if POper[-1] == '+' or POper[-1] == '-':
                     if len(pilaO) > 1:
                         right_operand = pilaO.pop(-1)
-                        print(var)
                         if var.get(right_operand):
                             right_type = var[right_operand][0]
                             right_table = 'var'
@@ -710,7 +705,7 @@ class MyListener(MyGrammarListener):
                             left_type = cte[left_operand][0]
                             left_table = 'cte'
                         operator = POper.pop(-1)
-                        # BACK HERE
+                        # BACK
                         print(left_operand, right_operand, operator)
                         res_type = return_type(
                             right_type, operator, left_type)
@@ -734,6 +729,7 @@ class MyListener(MyGrammarListener):
     # Enter a parse tree produced by MyGrammarParser#exp_op.
 
     def enterExp_op(self, ctx: MyGrammarParser.Exp_opContext):
+        self.debugEnter(ctx)
         num_children = ctx.getChildCount()
         if num_children > 0:
             child = ctx.getChild(0)
@@ -744,16 +740,19 @@ class MyListener(MyGrammarListener):
     # Exit a parse tree produced by MyGrammarParser#exp_op.
 
     def exitExp_op(self, ctx: MyGrammarParser.Exp_opContext):
+        self.debugExit(ctx)
         pass
 
     # Enter a parse tree produced by MyGrammarParser#termino.
 
     def enterTermino(self, ctx: MyGrammarParser.TerminoContext):
+        self.debugEnter(ctx)
         pass
 
     # Exit a parse tree produced by MyGrammarParser#termino.
 
     def exitTermino(self, ctx: MyGrammarParser.TerminoContext):
+        self.debugExit(ctx)
         self.term_aux(ctx)
         self.term_flag = False
 
@@ -816,7 +815,6 @@ class MyListener(MyGrammarListener):
     def enterFactor(self, ctx: MyGrammarParser.FactorContext):
         global pilaO
         global POper
-        self.debugEnter(ctx)
         if ctx.getChildCount() == 3:
             pilaO_aux = pilaO.copy()
             POper_aux = POper.copy()
@@ -831,7 +829,6 @@ class MyListener(MyGrammarListener):
     def exitFactor(self, ctx: MyGrammarParser.FactorContext):
         global pilaO
         global POper
-        self.debugExit(ctx)
         if ctx.getChildCount() == 3:
 
             pilaO_aux = ctx.pilaO_aux.copy()
@@ -847,6 +844,7 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#var_cte.
     def enterVar_cte(self, ctx: MyGrammarParser.Var_cteContext):
+        self.debugEnter(ctx)
         num_children = ctx.getChildCount()
         if num_children > 0:
             child = ctx.getChild(0)
@@ -1088,7 +1086,7 @@ bool_count_func = 120001
 
 
 def main():
-    input_stream = FileStream("test2.pyr")
+    input_stream = FileStream("test.pyr")
     lexer = MyGrammarLexer(input_stream)
     tokens = CommonTokenStream(lexer)
     parser = MyGrammarParser(tokens)

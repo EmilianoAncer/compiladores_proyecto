@@ -36,3 +36,23 @@ def gosub(func_id, func_start):
 
 def ret(ret_address):
     return ['RETURN', None, None, ret_address]
+
+
+def read(assign_dir):
+    return ['READ', None, None, assign_dir]
+
+
+def write(dir):
+    return ['WRITE', None, None, dir]
+
+
+def write_start():
+    return ['WRITE_START', None, None, None]
+
+
+def write_part(dir):
+    return ['PART', None, None, dir]
+
+
+def write_end():
+    return ['WRITE_END', None, None, None]

@@ -22,8 +22,9 @@ extra_vars: ',' ID extra_vars |;
 new_type: var_init |;
 
 arr: 'arr' arr_init |;
-arr_init: tipo ':' ID '[' CTE_I ']' extra_arrs ';' new_arr_type;
-extra_arrs: ',' ID '[' CTE_I ']' extra_arrs |;
+arr_init: tipo ':' ID arr_dim extra_arrs ';' new_arr_type;
+extra_arrs: ',' ID arr_dim extra_arrs |;
+arr_dim: '[' CTE_I ']' | '[' CTE_I ']' '[' CTE_I ']';
 new_arr_type: arr_init |;
 
 tipo: 'int' | 'float' | 'bool';
@@ -51,7 +52,9 @@ escritura: 'print' '(' print_def ')' ';';
 print_def: expresion print_extra;
 print_extra: ',' expresion print_extra |;
 
-lectura: ID '=' 'read' '(' CTE_STRING ')' ';';
+lectura:
+	ID '=' 'read' '(' CTE_STRING ')' ';'
+	| ID '=' 'read' '(' ')' ';';
 
 func_call:
 	ID '(' func_call_params ')' ';'
@@ -86,6 +89,8 @@ termino: factor termino_op;
 termino_op: '*' termino | '/' termino |;
 
 factor: var_cte | '(' expresion ')' | func_call;
+
+arr_call: ID '[' expresion ']';
 
 var_cte: CTE_STRING | CTE_I | CTE_F | CTE_B | ID;
 

@@ -4,186 +4,296 @@ semanticCube = {  # TODO Check if ill add "not"
         '+': {
             'int': 'int',
             'float': 'float',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '-': {
             'int': 'int',
             'float': 'float',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '*': {
             'int': 'int',
             'float': 'float',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '/': {
             'int': 'float',
             'float': 'float',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '>': {
             'int': 'bool',
             'float': 'bool',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '<': {
             'int': 'bool',
             'float': 'bool',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '>=': {
             'int': 'bool',
             'float': 'bool',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '<=': {
             'int': 'bool',
             'float': 'bool',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '==': {
             'int': 'bool',
             'float': 'error',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '!=': {
             'int': 'bool',
             'float': 'error',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         'and': {
             'int': 'error',
             'float': 'error',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         'or': {
             'int': 'error',
             'float': 'error',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         }
     },
     'float': {
         '+': {
             'float': 'float',
             'int': 'float',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '-': {
             'float': 'float',
             'int': 'float',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '*': {
             'float': 'float',
             'int': 'float',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '/': {
             'float': 'float',
             'int': 'float',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '>': {
             'float': 'bool',
             'int': 'bool',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '<': {
             'float': 'bool',
             'int': 'bool',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '>=': {
             'float': 'bool',
             'int': 'bool',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '<=': {
             'float': 'bool',
             'int': 'bool',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '==': {
             'float': 'bool',
             'int': 'error',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         '!=': {
             'float': 'bool',
             'int': 'error',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         'and': {
             'float': 'error',
             'int': 'error',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         },
         'or': {
             'float': 'error',
             'int': 'error',
-            'bool': 'error'
+            'bool': 'error',
+            'string': 'error'
         }
     },
     'bool': {
         '+': {
             'bool': 'error',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '-': {
             'bool': 'error',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '*': {
             'bool': 'error',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '/': {
             'bool': 'error',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         'and': {
             'bool': 'bool',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         'or': {
             'bool': 'bool',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '>': {
             'bool': 'error',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '<': {
             'bool': 'error',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '<=': {
             'bool': 'error',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '>=': {
             'bool': 'error',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '==': {
             'bool': 'bool',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
         },
         '!=': {
             'bool': 'bool',
             'int': 'error',
-            'float': 'error'
+            'float': 'error',
+            'string': 'error'
+        }
+    },
+    'string': {
+        '+': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '-': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '*': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '/': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        'and': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        'or': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '>': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '<': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '<=': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '>=': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '==': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
+        },
+        '!=': {
+            'bool': 'error',
+            'int': 'error',
+            'float': 'error',
+            'string': 'error'
         }
     }
 }
