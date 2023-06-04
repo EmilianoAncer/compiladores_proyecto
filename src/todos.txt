@@ -1,3 +1,7 @@
 agregar error en ejecucion para cuando se usa una variable que no tiene valor
 
 Checar en un read que lo que asignes sea del mismo tipo de la variable
+
+Restart temp after function
+
+change in grammar the arr_call to be exp instead of expresion

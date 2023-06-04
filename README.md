@@ -55,6 +55,9 @@ Como puse arriba me falta llamada de funciones y tambien me falta arreglos y mat
 #### Commits
 Lo agregare despues, son muchos.
 
+## Avance 5 de junio
+Termine las llamadas de funciones y tambien la declaracion de arreglos, los accesos de arreglo esta a punto de que funcionen completamente, para la entrega no alcance a que funcionaran cuando tienes un acceso a arreglo adentro de la dimension de otro arreglo, pero hoy mismo dejare eso funcionando, mañana me enfocare completamente en la VM para acabar el proyecto.
+
 
 
 ## Testing

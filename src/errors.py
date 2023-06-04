@@ -1,3 +1,6 @@
+from sys import exit
+
+
 def same_variable_init(line, var_id):
     raise NameError(
         f'Error at line: {line}. Variable "{var_id}" was initialized multiple times.')
@@ -81,3 +84,35 @@ def bad_param_number(line, expected, recieved):
     raise TypeError(
         f'Error at line: {line}. Expected number of parameters: "{expected}", received: "{recieved}".'
     )
+
+
+def arr_init_no_dim(line, arr_name):
+    raise TypeError(
+        f'Error at line: {line}. Array "{arr_name}" was not given dimension on initialization.'
+    )
+
+
+def no_arr_to_init(line):
+    raise SyntaxError(
+        f'Error at line: {line}. No array to initialize.'
+    )
+
+
+def var_is_not_arr(line, var_name):
+    try:
+        raise TypeError(
+            f'Error at line: {line}. "{var_name}" is not an array.'
+        )
+    except Exception as e:
+        print(e)
+        exit()
+
+
+def arr_is_not_var(line, arr_name):
+    try:
+        raise TypeError(
+            f'Error at line: {line}. Array "{arr_name}" has no dimensions.'
+        )
+    except Exception as e:
+        print(e)
+        exit()

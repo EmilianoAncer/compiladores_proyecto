@@ -88,9 +88,10 @@ exp_op: '+' exp | '-' exp |;
 termino: factor termino_op;
 termino_op: '*' termino | '/' termino |;
 
-factor: var_cte | '(' expresion ')' | func_call;
+factor: var_cte | '(' expresion ')' | func_call | arr_call;
 
-arr_call: ID '[' expresion ']';
+arr_call: ID '[' expresion ']' arr_call_extra_dim;
+arr_call_extra_dim: '[' expresion ']' |;
 
 var_cte: CTE_STRING | CTE_I | CTE_F | CTE_B | ID;
 

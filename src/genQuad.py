@@ -56,3 +56,7 @@ def write_part(dir):
 
 def write_end():
     return ['WRITE_END', None, None, None]
+
+
+def verify(value, dim_size):
+    return ['VER', value, None, dim_size]

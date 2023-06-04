@@ -2,6 +2,7 @@ from antlr4 import *
 from antlr.MyGrammarLexer import MyGrammarLexer
 from antlr.MyGrammarParser import MyGrammarParser
 from antlr.MyGrammarListener import MyGrammarListener
+from antlr4.error import ErrorListener
 import errors
 import genQuad
 from semanticCube import return_type
@@ -21,10 +22,15 @@ class MyListener(MyGrammarListener):
         self.param_counter = 0
         self.func_call_ID = None
         self.return_counter = 0
+        self.arr_ctx_type = None
+        self.arr_name = None
+        self.arr_dim = 0
+        self.in_arr_call = 0
 
     # Enter a parse tree produced by MyGrammarParser#programa.
     def enterPrograma(self, ctx: MyGrammarParser.ProgramaContext):
         program_id = ctx.ID().getText()
+        # DEBUG
         print(f"Program ID: {program_id}")
         self.context = 'global'
         self.which_func = ['main', 'void']
@@ -227,6 +233,127 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#new_type.
     def exitNew_type(self, ctx: MyGrammarParser.New_typeContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#arr.
+    def enterArr(self, ctx: MyGrammarParser.ArrContext):
+        self.arr_dim = 0
+
+    # Exit a parse tree produced by MyGrammarParser#arr.
+    def exitArr(self, ctx: MyGrammarParser.ArrContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#arr_init.
+    def enterArr_init(self, ctx: MyGrammarParser.Arr_initContext):
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            self.arr_ctx_type = ctx.tipo().getText()
+            self.arr_name = ctx.ID().getText()
+            if var.get(self.arr_name):
+                errors.same_variable_init(ctx.start.line, self.arr_name)
+            base_address = get_var_address(
+                self.arr_ctx_type, ctx.start.line, self.context)
+            # tipo, direcciones, limite superior
+            var[self.arr_name] = [self.arr_ctx_type, base_address, []]
+        else:
+            # TODO add this error to variables
+            errors.no_arr_to_init(ctx.start.line)
+
+    # Exit a parse tree produced by MyGrammarParser#arr_init.
+    def exitArr_init(self, ctx: MyGrammarParser.Arr_initContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#extra_arrs.
+    def enterExtra_arrs(self, ctx: MyGrammarParser.Extra_arrsContext):
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            self.arr_name = ctx.ID().getText()
+            if var.get(self.arr_name):
+                errors.same_variable_init(ctx.start.line, self.arr_name)
+            base_address = get_var_address(
+                self.arr_ctx_type, ctx.start.line, self.context)
+            # tipo, direcciones, limite superior
+            var[self.arr_name] = [self.arr_ctx_type, base_address, []]
+
+    # Exit a parse tree produced by MyGrammarParser#extra_arrs.
+    def exitExtra_arrs(self, ctx: MyGrammarParser.Extra_arrsContext):
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#arr_dim.
+    def enterArr_dim(self, ctx: MyGrammarParser.Arr_dimContext):
+        num_children = ctx.getChildCount()
+        if num_children == 3:
+            self.arr_dim += 1
+            sup = ctx.getChild(1).getText()
+            if not cte.get(sup):
+                cte[sup] = [
+                    'int', get_constant_address('int', ctx.start.line)]
+            var[self.arr_name][2].append(sup)
+            size = int(sup) - 1
+            self.update_varAddress(size, ctx)
+        elif num_children == 6:
+            self.arr_dim += 1
+            sup1 = ctx.getChild(1).getText()
+            if not cte.get(sup1):
+                cte[sup1] = [
+                    'int', get_constant_address('int', ctx.start.line)]
+            var[self.arr_name][2].append(sup1)
+
+            self.arr_dim += 1
+            sup2 = ctx.getChild(4).getText()
+            if not cte.get(sup2):
+                cte[sup2] = [
+                    'int', get_constant_address('int', ctx.start.line)]
+            var[self.arr_name][2].append(sup2)
+            size = int(sup1) * int(sup2) - 1
+            self.update_varAddress(size, ctx)
+
+    def update_varAddress(self, size, ctx):
+        if var[self.arr_name][0] == 'int':
+            if self.context == 'global':
+                global int_count
+                int_count += size
+                check_var_limit(int_count, ctx.start.line, 'int', self.context)
+            else:
+                global int_count_func
+                int_count_func += size
+                check_var_limit(int_count_func, ctx.start.line,
+                                'int', self.context)
+        elif var[self.arr_name][0] == 'float':
+            if self.context == 'global':
+                global float_count
+                float_count += size
+                check_var_limit(float_count, ctx.start.line,
+                                'float', self.context)
+            else:
+                global float_count_func
+                float_count_func += size
+                check_var_limit(float_count_func, ctx.start.line,
+                                'float', self.context)
+        elif var[self.arr_name][0] == 'int':
+            if self.context == 'global':
+                global bool_count
+                bool_count += size
+                check_var_limit(bool_count, ctx.start.line,
+                                'bool', self.context)
+            else:
+                global bool_count_func
+                bool_count_func += size
+                check_var_limit(bool_count_func, ctx.start.line,
+                                'bool', self.context)
+
+    # Exit a parse tree produced by MyGrammarParser#arr_dim.
+    def exitArr_dim(self, ctx: MyGrammarParser.Arr_dimContext):
+        if self.arr_dim < 1:
+            errors.arr_init_no_dim(ctx.start.line, self.arr_name)
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#new_arr_type.
+    def enterNew_arr_type(self, ctx: MyGrammarParser.New_arr_typeContext):
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#new_arr_type.
+    def exitNew_arr_type(self, ctx: MyGrammarParser.New_arr_typeContext):
         pass
 
     # Enter a parse tree produced by MyGrammarParser#tipo.
@@ -461,12 +588,10 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#escritura.
     def enterEscritura(self, ctx: MyGrammarParser.EscrituraContext):
-        self.debugEnter(ctx)
-
+        pass
     # Exit a parse tree produced by MyGrammarParser#escritura.
 
     def exitEscritura(self, ctx: MyGrammarParser.EscrituraContext):
-        self.debugExit(ctx)
         if len(pilaO) > 0:
             print_part = pilaO.pop(-1)
             if var.get(print_part):
@@ -477,18 +602,15 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#print_def.
     def enterPrint_def(self, ctx: MyGrammarParser.Print_defContext):
-        self.debugEnter(ctx)
         quad.append(genQuad.write_start())
 
     # Exit a parse tree produced by MyGrammarParser#print_def.
 
     def exitPrint_def(self, ctx: MyGrammarParser.Print_defContext):
-        self.debugExit(ctx)
         pass
 
     # Enter a parse tree produced by MyGrammarParser#print_extra.
     def enterPrint_extra(self, ctx: MyGrammarParser.Print_extraContext):
-        self.debugEnter(ctx)
         num_children = ctx.getChildCount()
         if num_children > 0:
             print_part = pilaO.pop(-1)
@@ -496,14 +618,10 @@ class MyListener(MyGrammarListener):
                 quad.append(genQuad.write_part(var[print_part][1]))
             else:
                 quad.append(genQuad.write_part(cte[print_part][1]))
-
-            if ctx.expresion():
-                print('im an expresion')
         pass
 
     # Exit a parse tree produced by MyGrammarParser#print_extra.
     def exitPrint_extra(self, ctx: MyGrammarParser.Print_extraContext):
-        self.debugExit(ctx)
         '''num_children = ctx.getChildCount()
         if num_children > 0:
             print_part = pilaO.pop(-1)
@@ -663,12 +781,10 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#exp.
     def enterExp(self, ctx: MyGrammarParser.ExpContext):
-        self.debugEnter(ctx)
         pass
 
     # Exit a parse tree produced by MyGrammarParser#exp.
     def exitExp(self, ctx: MyGrammarParser.ExpContext):
-        self.debugExit(ctx)
         '''
         Punto numero 4 del diagrama de expresiones,
         si enterExp_op no corre la funcion, se correra aqui 
@@ -705,8 +821,6 @@ class MyListener(MyGrammarListener):
                             left_type = cte[left_operand][0]
                             left_table = 'cte'
                         operator = POper.pop(-1)
-                        # BACK
-                        print(left_operand, right_operand, operator)
                         res_type = return_type(
                             right_type, operator, left_type)
                         if res_type == 'error':
@@ -729,7 +843,6 @@ class MyListener(MyGrammarListener):
     # Enter a parse tree produced by MyGrammarParser#exp_op.
 
     def enterExp_op(self, ctx: MyGrammarParser.Exp_opContext):
-        self.debugEnter(ctx)
         num_children = ctx.getChildCount()
         if num_children > 0:
             child = ctx.getChild(0)
@@ -740,19 +853,16 @@ class MyListener(MyGrammarListener):
     # Exit a parse tree produced by MyGrammarParser#exp_op.
 
     def exitExp_op(self, ctx: MyGrammarParser.Exp_opContext):
-        self.debugExit(ctx)
         pass
 
     # Enter a parse tree produced by MyGrammarParser#termino.
 
     def enterTermino(self, ctx: MyGrammarParser.TerminoContext):
-        self.debugEnter(ctx)
         pass
 
     # Exit a parse tree produced by MyGrammarParser#termino.
 
     def exitTermino(self, ctx: MyGrammarParser.TerminoContext):
-        self.debugExit(ctx)
         self.term_aux(ctx)
         self.term_flag = False
 
@@ -830,7 +940,6 @@ class MyListener(MyGrammarListener):
         global pilaO
         global POper
         if ctx.getChildCount() == 3:
-
             pilaO_aux = ctx.pilaO_aux.copy()
             POper_aux = ctx.POper_aux.copy()
 
@@ -839,14 +948,119 @@ class MyListener(MyGrammarListener):
             POper = POper_aux.copy()
             # print('--------paren exp end---------')
             return
+        if ctx.arr_call():
+            return
         if ctx.func_call() == None:
+            if var.get(ctx.getText()):
+                if len(var[ctx.getText()]) == 3:
+                    errors.arr_is_not_var(ctx.start.line, ctx.getText())
             pilaO.append(ctx.getText())
+
+    # Enter a parse tree produced by MyGrammarParser#arr_call.
+    def enterArr_call(self, ctx: MyGrammarParser.Arr_callContext):
+        global pilaO
+        global POper
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            self.in_arr_call += 1
+            print(self.in_arr_call)
+            '''pilaO_aux = pilaO.copy()
+            POper_aux = POper.copy()
+            pilaO.clear()
+            POper.clear()
+            ctx.pilaO_aux = pilaO_aux.copy()
+            ctx.POper_aux = POper_aux.copy()'''
+            POper.append('(')  # meter fondo falso
+            if self.in_arr_call > 1:
+                ctx.arr_name = self.arr_name
+                ctx.arr_dim = self.arr_dim
+            self.arr_name = ctx.ID().getText()
+            if len(var[self.arr_name]) != 3:
+                errors.var_is_not_arr(ctx.start.line, self.arr_name)
+        self.arr_dim = len(var[self.arr_name][2])
+        self.debugEnter(ctx)
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#arr_call.
+    def exitArr_call(self, ctx: MyGrammarParser.Arr_callContext):
+        global pilaO
+        global POper
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            if self.in_arr_call > 1:
+                self.arr_name = ctx.arr_name
+                self.arr_dim = ctx.arr_dim
+            self.in_arr_call -= 1
+            '''pilaO_aux = ctx.pilaO_aux.copy()
+            POper_aux = ctx.POper_aux.copy()
+
+            pilaO_aux = pilaO_aux + pilaO
+            pilaO = pilaO_aux.copy()
+            POper = POper_aux.copy()'''
+            POper.pop(-1)  # Sacar fondo falso
+        self.debugExit(ctx)
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#arr_call_extra_dim.
+    def enterArr_call_extra_dim(self, ctx: MyGrammarParser.Arr_call_extra_dimContext):
+        if len(pilaO) > 0:
+            dim1 = pilaO.pop(-1)
+            size = var[self.arr_name][2][0]
+            if var.get(dim1):
+                quad.append(genQuad.verify(var[dim1][1], cte[size][1]))
+            else:
+                quad.append(genQuad.verify(cte[dim1][1], cte[size][1]))
+            if self.arr_dim == 1:
+                res = add_temp('int', ctx.start.line)
+                if var.get(dim1):
+                    quad.append(genQuad.exp(
+                        '+p', var[dim1][1], var[self.arr_name][1], var[res][1]))
+                else:
+                    quad.append(genQuad.exp(
+                        '+p', cte[dim1][1], var[self.arr_name][1], var[res][1]))
+                pilaO.append(res)
+            if self.arr_dim == 2:
+                res = add_temp('int', ctx.start.line)
+                size2 = size = var[self.arr_name][2][1]
+                if var.get(dim1):
+                    quad.append(genQuad.exp(
+                        '*', var[dim1][1], cte[size2][1], var[res][1]))
+                else:
+                    quad.append(genQuad.exp(
+                        '*', cte[dim1][1], cte[size2][1], var[res][1]))
+                pilaO.append(res)
+        self.debugEnter(ctx)
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#arr_call_extra_dim.
+    def exitArr_call_extra_dim(self, ctx: MyGrammarParser.Arr_call_extra_dimContext):
+        num_children = ctx.getChildCount()
+        if num_children > 0 and self.arr_dim == 2:
+            dim2 = pilaO.pop(-1)
+            size = var[self.arr_name][2][1]
+            if var.get(dim2):
+                quad.append(genQuad.verify(var[dim2][1], cte[size][1]))
+            else:
+                quad.append(genQuad.verify(cte[dim2][1], cte[size][1]))
+            dim1 = pilaO.pop(-1)
+            res = add_temp('int', ctx.start.line)
+            if var.get(dim2):
+                quad.append(genQuad.exp(
+                    '+', var[dim1][1], var[dim2][1], var[res][1]))
+                res2 = add_temp('int', ctx.start.line)
+                quad.append(genQuad.exp('+p', var[res][1], var[self.arr_name][1], var[res2][1]))
+            else:
+                quad.append(genQuad.exp(
+                    '+', var[dim1][1], cte[dim2][1], var[res][1]))
+            pilaO.append(res)
+        self.debugExit(ctx)
+        pass
 
     # Enter a parse tree produced by MyGrammarParser#var_cte.
     def enterVar_cte(self, ctx: MyGrammarParser.Var_cteContext):
-        self.debugEnter(ctx)
         num_children = ctx.getChildCount()
         if num_children > 0:
+            # TODO error if they try to use a whole array in expression
             child = ctx.getChild(0)
             if var.get(child.getText()) or cte.get(child.getText()):
                 return
@@ -869,7 +1083,6 @@ class MyListener(MyGrammarListener):
             address = get_constant_address(const_type, ctx.start.line)
             cte[ctx.CTE_F().getText()] = [const_type, address]
         elif ctx.CTE_B():  # TODO delete this after testing
-            print('THIS IS A BOOL CONSTANT', ctx.CTE_B().getText())
             const_type = 'bool'
             address = get_constant_address(const_type, ctx.start.line)
             cte[ctx.CTE_B().getText()] = [const_type, address]
@@ -931,12 +1144,18 @@ class MyListener(MyGrammarListener):
         print("")
 
 
+class MyErrorListener(ErrorListener.ErrorListener):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        raise SyntaxError(f"Syntax error at line {line}:{column} - {msg}")
+
+
 def add_temp(res_type, line):  # former next_temp
     global temp_count
     global temp_int_count
     global temp_float_count
     global temp_bool_count
     global temps_in_func
+    global temp_pointer_count
     name = temp_count
     if res_type == 'int':
         if temp_int_count >= 79999:
@@ -956,6 +1175,12 @@ def add_temp(res_type, line):  # former next_temp
         address = temp_bool_count
         var[name] = [res_type, address]
         temp_bool_count += 1
+    elif res_type == 'pointer':
+        if temp_pointer_count >= 139999:
+            errors.over_temp_limit(line)
+        address = temp_pointer_count
+        var[name] = [res_type, address]
+        temp_pointer_count += 1
     temp_count += 1
     temps_in_func += 1
     return name
@@ -971,6 +1196,27 @@ def clear_temps():
         del var[key]
 
 
+def check_var_limit(to_check, line, var_type, context):
+    if var_type == 'int' and context == 'global':
+        if to_check >= 9999:
+            errors.over_var_limit(line, var_type)
+    elif var_type == 'float' and context == 'global':
+        if to_check >= 19999:
+            errors.over_var_limit(line, var_type)
+    elif var_type == 'bool' and context == 'global':
+        if to_check >= 29999:
+            errors.over_var_limit(line, var_type)
+    elif var_type == 'int' and context != 'global':
+        if to_check >= 109999:
+            errors.over_var_limit(line, var_type)
+    elif var_type == 'float' and context != 'global':
+        if to_check >= 119999:
+            errors.over_var_limit(line, var_type)
+    elif var_type == 'bool' and context != 'global':
+        if to_check >= 129999:
+            errors.over_var_limit(line, var_type)
+
+
 def get_var_address(var_type, line, where):
     global int_count
     global float_count
@@ -980,37 +1226,31 @@ def get_var_address(var_type, line, where):
     global bool_count_func
     if where == 'global':
         if var_type == 'int':
-            if int_count >= 9999:
-                errors.over_var_limit(line, var_type)
             address = int_count
             int_count += 1
+            check_var_limit(int_count, line, var_type, where)
         elif var_type == 'float':
-            if float_count >= 19999:
-                errors.over_var_limit(line, var_type)
             address = float_count
             float_count += 1
+            check_var_limit(float_count, line, var_type, where)
         elif var_type == 'bool':
-            if bool_count >= 29999:
-                errors.over_var_limit(line, var_type)
             address = bool_count
             bool_count += 1
+            check_var_limit(bool_count, line, var_type, where)
         return address
     else:
         if var_type == 'int':
-            if int_count_func >= 109999:
-                errors.over_var_limit(line, var_type)
             address = int_count_func
             int_count_func += 1
+            check_var_limit(int_count_func, line, var_type, where)
         elif var_type == 'float':
-            if float_count_func >= 129999:
-                errors.over_var_limit(line, var_type)
             address = float_count_func
             float_count_func += 1
+            check_var_limit(float_count_func, line, var_type, where)
         elif var_type == 'bool':
-            if bool_count_func >= 139999:
-                errors.over_var_limit(line, var_type)
             address = bool_count_func
             bool_count_func += 1
+            check_var_limit(bool_count_func, line, var_type, where)
         return address
 
 
@@ -1079,6 +1319,7 @@ temp_count = 1
 temp_int_count = 70001
 temp_float_count = 80001
 temp_bool_count = 90001
+temp_pointer_count = 130001
 
 int_count_func = 100001
 float_count_func = 110001
@@ -1086,15 +1327,23 @@ bool_count_func = 120001
 
 
 def main():
-    input_stream = FileStream("test.pyr")
+    input_stream = FileStream("test2.pyr")
     lexer = MyGrammarLexer(input_stream)
     tokens = CommonTokenStream(lexer)
     parser = MyGrammarParser(tokens)
+
+    parser.removeErrorListeners()
+    error_listener = MyErrorListener()
+    parser.addErrorListener(error_listener)
 
     tree = parser.programa()
     listener = MyListener()
     walker = ParseTreeWalker()
     walker.walk(listener, tree)
+    print('PilaO')
+    print(pilaO)
+    print('POper')
+    print(POper)
     print('var:')
     print(var)
     print('cte:')
