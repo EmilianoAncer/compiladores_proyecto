@@ -1,4 +1,6 @@
-program Test;
+program ID;
+var int : test1, test2, a, b, c, d, x; float : test3;
+arr int: array[2], matrix[5][9];
 
 def int func1(int param1,  float param2, bool param3)
 var int : funcTest1, funcTest2, a; float : funcTest3;
@@ -12,14 +14,17 @@ var int: a, b;
 {
     print(a+b);
 }
+
 main()
-var int : test1, test2, a, b, c, d, x; float : test3;
 {
     test1 = 12;
     test2 = 2*2;
-    test3 = a+b*c-(c/d)
-
-    x = func1(2, 3.0, true)
+    test3 = a+b*c-(c/d);
+    a = read();
+    b = read("Type value for b: ");
+    x = func1(2, 3.0, true);
+    c = array[a];
+    d = matrix[a][a];
 
     if(2 > 0)
     {
@@ -28,7 +33,7 @@ var int : test1, test2, a, b, c, d, x; float : test3;
 
     while(a+b > c)
     {
-        print(a)
+        print(a);
     }
 
     if(0 < 2)
@@ -40,8 +45,7 @@ var int : test1, test2, a, b, c, d, x; float : test3;
         test3 = 0.1;
     }
 
-    print ("Hello, world!");
-    print (test1);
+    print ("Hello, world!", test3);
 
 
 }

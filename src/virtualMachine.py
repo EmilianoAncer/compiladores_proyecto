@@ -10,8 +10,8 @@ def run_quads(var, cte, func, quad):
     curr = 0
     for key in cte:
         var[key] = cte[key]
-    print(var)
-    print('---------Execution-----------')
+    '''print(var)
+    print('---------Execution-----------')'''
     while (True):
         curr_quad = quad[curr]
         if curr_quad[0] in ['+', '-', '*', '/', '<', '>', '<=', '>=', '==', '!=', 'and', 'or']:
@@ -169,6 +169,12 @@ def type_check(address):
 
 
 def receive_int_code(var, cte, func, quad):
+    print('-------Codigo Intermedio---------')
+    count = 0
+    for i in quad:
+        print(count, ":", i)
+        count += 1
+    print('-------Ejecucion---------')
     run_quads(var, cte, func, quad)
 
 

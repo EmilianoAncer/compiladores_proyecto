@@ -1,0 +1,14 @@
+program hello;
+
+def int func1(int param1, float param2)
+var int : a;
+arr float : b[4]
+{
+}
+
+main()
+{
+    while (a == b)
+    {
+    }
+}

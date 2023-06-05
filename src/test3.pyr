@@ -7,8 +7,10 @@ var int : a_func;
 {
     if (param1 < 10)
     {
+        print("param1: ", param1);
         return func1(param1 + 3);
     }
+    print("This is global a: ", a);
     return param1;
 }
 
@@ -19,21 +21,25 @@ main()
     d = 4.0;
     c = a * b * (3 + 4) - 5;
     print("This is c: ", c);
+
+    z = read("De el valor de z: ");
+    print("Valor z: ", z);
+
     if(a < b)
     {
-        print("ITS IN THE IF");
+        print("Adentro del primer if");
         if(c < a)
         {
-            print("THIS IS THE NESTED IF");
+            print("adentro del if anidado");
         }
         else
         {
-            print("THIS IS THE NESTED IF'S ELSE");
+            print("adentro del else que es del if anidado");
         }
     }
-    print("THIS IS AFTER THE IF");
+    print("despues del if");
 
-    a = func1(b) + 3;
+    a = func1(b);
     print(a);
 
     array[3][4] = c;

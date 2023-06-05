@@ -193,7 +193,6 @@ class MyListener(MyGrammarListener):
                 for key2 in func[key]['var']:
                     if var.get(key2):
                         to_delete.append(key2)
-                print(to_delete)
                 for key2 in to_delete:
                     del func[key]['var'][key2]
                 func[key]['num_var'] -= len(var)
@@ -423,7 +422,6 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#asignacion.
     def exitAsignacion(self, ctx: MyGrammarParser.AsignacionContext):
-        self.debugExit(ctx)
         if ctx.ID():
             var_id = ctx.ID().getText()
             if not var.get(var_id):

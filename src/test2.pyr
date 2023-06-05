@@ -1,43 +1,24 @@
-program patito;
+program test;
+var int : i, j, p; float : a, b;
+arr int : arreglo[12], mat[12][9];
 
-def int fact(int j)
-var int : i, p;
+def int func1(int param1)
+var int : a_func;
 {
-    i = j + (p - j * 2 + j);
-    if (j == 1)
+    if (param1 < 10)
     {
-        return j;
+        print("param1: ", param1);
+        return func1(param1 + 3);
     }
-    else
-    {
-        return (j * fact(j-1));
-    }
-}
-
-def void inicia(int y)
-var int : x;
-arr int : arreglo[12];
-{
-    x = 1;
-    while (x < 11)
-    {
-        arreglo[x] = y * x;
-        x = x + 1;
-    }
+    print("This is global j: ", j);
+    return param1;
 }
 
 main()
-var int : i, j, p;
-arr int : arreglo[12], mat[12][9];
 {   
-    p = read();
-    j = p * 2;
-    i = 1;
-    inicia(p * j - 5);
-    while(i >= 1)
-    {
-        print("resultado", arreglo[i], fact(i + 2));
-        print(mat[i][p * 2 - i]);
-        i = i - 1;
-    }
+    j = read("Input value for j: ");
+    p = func1(4);
+    print("value of p: ", p);
 }
+
+
