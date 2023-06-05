@@ -5,3 +5,18 @@ Checar en un read que lo que asignes sea del mismo tipo de la variable
 Restart temp after function
 
 change in grammar the arr_call to be exp instead of expresion
+
+hacer check en arr_call que las dims sean int
+
+En funciones me esta contando mal el numero de variables, le esta agregando las globales, puedo borrar facilmente las variables globales de la funcion cuando salga a bloque main
+hacerlo si es necesario
+
+
+DONE
+Voy a hacer return de nuevo, checar el ejemplo de patito
+basicamente es meter una variable a var{} que se llamara igual que la funcion y darle una direcciones
+entonces cuando estes haciendo un return que tenga la funcion (recursion) se va a poner la direcciones
+de la variable que tiene el mismo nombre que la funcion, ya en ejecucion, le asigno el valor
+guardare esta direccion de return en la tabla de funciones, 
+
+mi gramatica no acepta x = -1

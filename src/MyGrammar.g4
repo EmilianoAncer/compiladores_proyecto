@@ -4,11 +4,13 @@ options {
 	language = Python3;
 }
 
-programa: 'program' ID ';' func 'main()' var arr bloque;
+programa: 'program' ID ';' var arr func 'main()' main_bloque;
+
+main_bloque: bloque;
 
 func: 'def' func_init |;
 func_init:
-	func_tipo ID '(' parameters ')' var func_bloque extra_func;
+	func_tipo ID '(' parameters ')' var arr func_bloque extra_func;
 func_bloque: bloque;
 extra_func: func |;
 parameters: tipo ID extra_parameter |;
@@ -42,7 +44,7 @@ estatuto:
 	| return_call
 	| lectura;
 
-asignacion: ID '=' expresion ';';
+asignacion: ID '=' expresion ';' | arr_call '=' expresion ';';
 
 condicion: 'if' '(' expresion ')' cond_bloque;
 cond_bloque: bloque cond_else;
@@ -88,18 +90,22 @@ exp_op: '+' exp | '-' exp |;
 termino: factor termino_op;
 termino_op: '*' termino | '/' termino |;
 
-factor: var_cte | '(' expresion ')' | func_call | arr_call;
+factor:
+	var_cte
+	| '(' expresion ')'
+	| func_call
+	| arr_call
+	| unary_minus;
 
 arr_call: ID '[' expresion ']' arr_call_extra_dim;
 arr_call_extra_dim: '[' expresion ']' |;
 
-var_cte: CTE_STRING | CTE_I | CTE_F | CTE_B | ID;
+unary_minus: '-' CTE_I | '-' CTE_F;
+var_cte: CTE_STRING | CTE_I | CTE_F | ID;
 
 ID: [a-zA-Z_] [a-zA-Z_0-9]*;
 CTE_I: [0-9]+;
-CTE_F: [0-9]+ ('.' [0-9]*)? ([eE][+-]? [0-9]+)?;
+CTE_F: [0-9]+ ('.' [0-9]*)?;
 CTE_STRING: '"' (~'"')* '"';
-//TODO delete CTE_B will get delt with in interCode
-CTE_B: 'true' | 'false';
 
 SPACES: [ \t\r\n]+ -> skip;

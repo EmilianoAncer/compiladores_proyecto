@@ -1,0 +1,41 @@
+program test;
+var int : a, b, c, z; float : d, e;
+arr int : array[7][6];
+
+def int func1(int param1)
+var int : a_func;
+{
+    if (param1 < 10)
+    {
+        return func1(param1 + 3);
+    }
+    return param1;
+}
+
+main()
+{
+    a = 1;
+    b = 2;
+    d = 4.0;
+    c = a * b * (3 + 4) - 5;
+    print("This is c: ", c);
+    if(a < b)
+    {
+        print("ITS IN THE IF");
+        if(c < a)
+        {
+            print("THIS IS THE NESTED IF");
+        }
+        else
+        {
+            print("THIS IS THE NESTED IF'S ELSE");
+        }
+    }
+    print("THIS IS AFTER THE IF");
+
+    a = func1(b) + 3;
+    print(a);
+
+    array[3][4] = c;
+    print(array[3][4]);
+}

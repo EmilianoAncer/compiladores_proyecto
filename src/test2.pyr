@@ -1,9 +1,43 @@
-program Test;
+program patito;
 
+def int fact(int j)
+var int : i, p;
+{
+    i = j + (p - j * 2 + j);
+    if (j == 1)
+    {
+        return j;
+    }
+    else
+    {
+        return (j * fact(j-1));
+    }
+}
+
+def void inicia(int y)
+var int : x;
+arr int : arreglo[12];
+{
+    x = 1;
+    while (x < 11)
+    {
+        arreglo[x] = y * x;
+        x = x + 1;
+    }
+}
 
 main()
-var int : a, b, c;
-arr int : d[5], e[6][7], h[10]; float : f[10];
+var int : i, j, p;
+arr int : arreglo[12], mat[12][9];
 {   
-    a = (6 - (1 + (2 * (3 - 4)) * 5)) * 8;
+    p = read();
+    j = p * 2;
+    i = 1;
+    inicia(p * j - 5);
+    while(i >= 1)
+    {
+        print("resultado", arreglo[i], fact(i + 2));
+        print(mat[i][p * 2 - i]);
+        i = i - 1;
+    }
 }

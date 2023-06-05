@@ -1,3 +1,4 @@
+from sys import exit
 from antlr4 import *
 from antlr.MyGrammarLexer import MyGrammarLexer
 from antlr.MyGrammarParser import MyGrammarParser
@@ -21,17 +22,16 @@ class MyListener(MyGrammarListener):
         self.which_func = [None, None]
         self.param_counter = 0
         self.func_call_ID = None
-        self.return_counter = 0
         self.arr_ctx_type = None
         self.arr_name = None
         self.arr_dim = 0
         self.in_arr_call = 0
+        self.save_global_var = None
+        self.return_count = 0
 
     # Enter a parse tree produced by MyGrammarParser#programa.
     def enterPrograma(self, ctx: MyGrammarParser.ProgramaContext):
         program_id = ctx.ID().getText()
-        # DEBUG
-        print(f"Program ID: {program_id}")
         self.context = 'global'
         self.which_func = ['main', 'void']
         quad.append(genQuad.goto())
@@ -42,16 +42,19 @@ class MyListener(MyGrammarListener):
 
         # Enter a parse tree produced by MyGrammarParser#func.
     def enterFunc(self, ctx: MyGrammarParser.FuncContext):
-        var.clear()
-        pilaO.clear()
-        POper.clear()
-        PJumps.clear()
+        global var
+        if len(func) == 0:
+            self.save_global_var = var.copy()
+        else:
+            var = self.save_global_var.copy()
 
     # Exit a parse tree produced by MyGrammarParser#func.
 
     def exitFunc(self, ctx: MyGrammarParser.FuncContext):
+        global var
         self.context = 'global'
         self.which_func = ['main', 'void']
+        var = self.save_global_var.copy()
 
     # Enter a parse tree produced by MyGrammarParser#func_init.
     def enterFunc_init(self, ctx: MyGrammarParser.Func_initContext):
@@ -66,11 +69,9 @@ class MyListener(MyGrammarListener):
         func[func_name] = {}
         func[func_name]['type'] = func_type
         if func_type != 'void':
-            self.return_counter += 1
-            return_name = str(self.return_counter) + 'r'
-            func[func_name]['return'] = {
-                return_name: [func_type, 'GET_RETURN_VALUE']}
-            var[return_name] = [func_type, 'GET_RETURN_VALUE']
+            address = get_var_address(func_type, ctx.start.line, 'global')
+            var[func_name] = [func_type, address]
+            func[func_name]['return'] = {func_name: var[func_name]}
         else:
             func[func_name]['return'] = None
 
@@ -108,10 +109,13 @@ class MyListener(MyGrammarListener):
         pilaO.clear()
         POper.clear()
         PJumps.clear()
-        quad.append(genQuad.end_func())
+        if self.which_func[1] != 'void' and self.return_count == 0:
+            errors.func_needs_return(ctx.start.line, self.which_func[0])
+        if func[self.which_func[0]]['return'] == None:
+            quad.append(genQuad.end_func())
         func[self.which_func[0]]['num_temp'] = temps_in_func
-        temps_in_func = 0
-        self.return_counter = 0
+        clear_temps()
+        self.return_count = 0
 
     # Enter a parse tree produced by MyGrammarParser#extra_func.
 
@@ -174,17 +178,33 @@ class MyListener(MyGrammarListener):
     def exitFunc_tipo(self, ctx: MyGrammarParser.Func_tipoContext):
         pass
 
-    # Enter a parse tree produced by MyGrammarParser#var.
-    def enterVar(self, ctx: MyGrammarParser.VarContext):
+    # Enter a parse tree produced by MyGrammarParser#main_bloque.
+    def enterMain_bloque(self, ctx: MyGrammarParser.Main_bloqueContext):
         if self.context == 'global':
             quad[0][3] = len(quad)
             for key in func:
                 if func[key]['return'] != None:
-                    return_var = func[key]['return'].copy()
-                    for key2 in return_var:
+                    for key2 in func[key]['return']:
                         return_key = key2
                     if not var.get(return_key):
-                        var[return_key] = return_var[return_key].copy()
+                        var[return_key] = func[return_key]['return'][return_key]
+                to_delete = []  # Estoy borrando las globales de la tabla local
+                for key2 in func[key]['var']:
+                    if var.get(key2):
+                        to_delete.append(key2)
+                print(to_delete)
+                for key2 in to_delete:
+                    del func[key]['var'][key2]
+                func[key]['num_var'] -= len(var)
+
+    # Exit a parse tree produced by MyGrammarParser#main_bloque.
+
+    def exitMain_bloque(self, ctx: MyGrammarParser.Main_bloqueContext):
+        clear_temps()
+        pass
+
+    # Enter a parse tree produced by MyGrammarParser#var.
+    def enterVar(self, ctx: MyGrammarParser.VarContext):
         pass
 
     # Exit a parse tree produced by MyGrammarParser#var.
@@ -402,29 +422,32 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#asignacion.
     def exitAsignacion(self, ctx: MyGrammarParser.AsignacionContext):
-        var_id = ctx.ID().getText()
-        if not var.get(var_id):
-            errors.var_not_initialized(ctx.start.line, var_id)
-        if len(pilaO) > 0:
-            res = pilaO.pop(-1)
-            '''
-            Probablemente cambiar esto de abajo, la manera mas facil que veo de hacerlo es, cuando se acaba una init de funcion con return, meter una temporal a la 
-            tabla de variables global que sea el valor de return de la funcion, para que si hago una llamada a funcion pueda solo referirme a eso sin tener que sacarlo de
-            la tabla de funciones, al mismo tiempo si lo tendre en la tabla de funciones para saber cual es inicialmente, pero la version que estara en la global sera para reglas de despues
-            como assign, expresion o recursion
-            '''
-            if var.get(res):
-                res_aux = var[res]
-            else:
-                res_aux = cte[res]
-            if var[var_id][0] == res_aux[0]:
-                quad.append(genQuad.asign(var[var_id][1], res_aux[1]))
-            else:
-                curr_line = ctx.start.line
-                errors.asign_bad_type(
-                    curr_line, var[var_id][0], res_aux[0])
-
-        # clear_temps()
+        self.debugExit(ctx)
+        if ctx.ID():
+            var_id = ctx.ID().getText()
+            if not var.get(var_id):
+                errors.var_not_initialized(ctx.start.line, var_id)
+            if len(pilaO) > 0:
+                res = pilaO.pop(-1)
+                if var.get(res):
+                    res_aux = var[res]
+                else:
+                    res_aux = cte[res]
+                if var[var_id][0] == res_aux[0]:
+                    quad.append(genQuad.asign(var[var_id][1], res_aux[1]))
+                else:
+                    curr_line = ctx.start.line
+                    errors.asign_bad_type(
+                        curr_line, var[var_id][0], res_aux[0])
+        elif ctx.arr_call():
+            if len(pilaO) > 0:
+                value = pilaO.pop(-1)
+                arr_pointer = pilaO.pop(-1)
+                if var.get(value):
+                    value_aux = var[value]
+                else:
+                    value_aux = cte[value]
+                quad.append(genQuad.asign(var[arr_pointer][1], value_aux[1]))
 
     # Enter a parse tree produced by MyGrammarParser#condicion.
 
@@ -479,7 +502,7 @@ class MyListener(MyGrammarListener):
             quad[bread_crumb][3] = len(quad)
 
     def enterWhile_loop(self, ctx: MyGrammarParser.While_loopContext):
-        PJumps.append(len(quad))  # TODO check this jump
+        PJumps.append(len(quad))
 
     # Exit a parse tree produced by MyGrammarParser#while_loop.
     def exitWhile_loop(self, ctx: MyGrammarParser.While_loopContext):
@@ -487,6 +510,7 @@ class MyListener(MyGrammarListener):
 
         # Enter a parse tree produced by MyGrammarParser#func_call.
     def enterFunc_call(self, ctx: MyGrammarParser.Func_callContext):
+        POper.append('(')
         if ctx.ID():
             if func.get(ctx.ID().getText()):
                 self.param_counter = 0
@@ -503,10 +527,9 @@ class MyListener(MyGrammarListener):
         quad.append(genQuad.gosub(self.func_call_ID,
                     func[self.func_call_ID]['start']))
         if func[self.func_call_ID]['return'] != None:
-            for key in func[self.func_call_ID]['return']:
-                return_key = key
+            return_key = self.func_call_ID
             pilaO.append(return_key)
-        pass
+        POper.pop(-1)
 
         # Enter a parse tree produced by MyGrammarParser#func_call_params.
     def enterFunc_call_params(self, ctx: MyGrammarParser.Func_call_paramsContext):
@@ -527,12 +550,12 @@ class MyListener(MyGrammarListener):
                 param_aux = cte[param_aux]
             init_param_name = str(self.param_counter) + 'p'
             if func[self.func_call_ID]['var'][init_param_name][0] == param_aux[0]:
-                quad.append(genQuad.func_param(param_aux[1], init_param_name))
+                quad.append(genQuad.func_param(
+                    param_aux[1], func[self.func_call_ID]['var'][init_param_name][1]))
             else:
                 errors.bad_param_type(
                     ctx.start.line, param_aux[0], func[self.func_call_ID]['var'][init_param_name][0])
             self.param_waiting = False
-        pass
 
     # Exit a parse tree produced by MyGrammarParser#f_c_params_extra.
     def exitF_c_params_extra(self, ctx: MyGrammarParser.F_c_params_extraContext):
@@ -567,26 +590,16 @@ class MyListener(MyGrammarListener):
             else:
                 if self.context == 'func':
                     to_return = pilaO.pop(-1)
-                    self.return_counter += 1
-                    return_var_name = str(self.return_counter) + 'r'
-                    if var.get(to_return):
-                        if self.which_func[1] == var[to_return][0]:
-                            func[self.which_func[0]]['return'][return_var_name] = [
-                                var[to_return][0], var[to_return][1]]
-                            quad.append(genQuad.ret(var[to_return][1]))
-                        else:
-                            errors.bad_return_type(
-                                ctx.start.line, self.which_func[1], var[to_return][0])
+                    if self.which_func[1] == var[to_return][0]:
+                        quad.append(genQuad.ret(var[to_return][1]))
+                        quad.append(genQuad.end_func())
+                        self.return_count += 1
                     else:
-                        if self.which_func[1] == cte[to_return][0]:
-                            func[self.which_func[0]]['return'][return_var_name] = [
-                                cte[to_return][0], cte[to_return][1]]
-                            quad.append(genQuad.ret(cte[to_return][1]))
-                        else:
-                            errors.bad_return_type(
-                                ctx.start.line, self.which_func[1], cte[to_return][0])
+                        errors.bad_return_type(
+                            ctx.start.line, self.which_func[1], var[to_return][0])
 
     # Enter a parse tree produced by MyGrammarParser#escritura.
+
     def enterEscritura(self, ctx: MyGrammarParser.EscrituraContext):
         pass
     # Exit a parse tree produced by MyGrammarParser#escritura.
@@ -602,7 +615,8 @@ class MyListener(MyGrammarListener):
 
     # Enter a parse tree produced by MyGrammarParser#print_def.
     def enterPrint_def(self, ctx: MyGrammarParser.Print_defContext):
-        quad.append(genQuad.write_start())
+        # quad.append(genQuad.write_start())
+        pass
 
     # Exit a parse tree produced by MyGrammarParser#print_def.
 
@@ -622,13 +636,7 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#print_extra.
     def exitPrint_extra(self, ctx: MyGrammarParser.Print_extraContext):
-        '''num_children = ctx.getChildCount()
-        if num_children > 0:
-            print_part = pilaO.pop(-1)
-            if var.get(print_part):
-                quad.append(genQuad.write_part(var[print_part][1]))
-            else:
-                quad.append(genQuad.write_part(cte[print_part][1]))'''
+        pass
 
     # Enter a parse tree produced by MyGrammarParser#lectura.
     def enterLectura(self, ctx: MyGrammarParser.LecturaContext):
@@ -639,7 +647,7 @@ class MyListener(MyGrammarListener):
             const_type = 'string'
             address = get_constant_address(const_type, ctx.start.line)
             cte[ctx.CTE_STRING().getText()] = [const_type, address]
-            quad.append(genQuad.write(cte[ctx.CTE_STRING().getText()][1]))
+            quad.append(genQuad.write_part(cte[ctx.CTE_STRING().getText()][1]))
 
         quad.append(genQuad.read(var[ctx.ID().getText()][1]))
 
@@ -855,6 +863,29 @@ class MyListener(MyGrammarListener):
     def exitExp_op(self, ctx: MyGrammarParser.Exp_opContext):
         pass
 
+    # Enter a parse tree produced by MyGrammarParser#unary_minus.
+    def enterUnary_minus(self, ctx: MyGrammarParser.Unary_minusContext):
+        num_children = ctx.getChildCount()
+        if num_children > 0:
+            if ctx.CTE_I() is not None:
+                cte_i = ctx.getChild(1).getText()
+                if cte_i == '0':
+                    errors.negative_zero(ctx.start.line)
+                negative_cte_i = '-' + cte_i
+                address = get_constant_address('int', ctx.start.line)
+                cte[negative_cte_i] = ['int', address]
+            elif ctx.CTE_B() is not None:
+                cte_f = ctx.getChild(1).getText()
+                if cte_f == '0.0':
+                    errors.negative_zero(ctx.start.line)
+                negative_cte_f = '-' + cte_f
+                address = get_constant_address('float', ctx.start.line)
+                cte[negative_cte_f] = ['float', address]
+
+    # Exit a parse tree produced by MyGrammarParser#unary_minus.
+    def exitUnary_minus(self, ctx: MyGrammarParser.Unary_minusContext):
+        pass
+
     # Enter a parse tree produced by MyGrammarParser#termino.
 
     def enterTermino(self, ctx: MyGrammarParser.TerminoContext):
@@ -963,13 +994,6 @@ class MyListener(MyGrammarListener):
         num_children = ctx.getChildCount()
         if num_children > 0:
             self.in_arr_call += 1
-            print(self.in_arr_call)
-            '''pilaO_aux = pilaO.copy()
-            POper_aux = POper.copy()
-            pilaO.clear()
-            POper.clear()
-            ctx.pilaO_aux = pilaO_aux.copy()
-            ctx.POper_aux = POper_aux.copy()'''
             POper.append('(')  # meter fondo falso
             if self.in_arr_call > 1:
                 ctx.arr_name = self.arr_name
@@ -978,8 +1002,6 @@ class MyListener(MyGrammarListener):
             if len(var[self.arr_name]) != 3:
                 errors.var_is_not_arr(ctx.start.line, self.arr_name)
         self.arr_dim = len(var[self.arr_name][2])
-        self.debugEnter(ctx)
-        pass
 
     # Exit a parse tree produced by MyGrammarParser#arr_call.
     def exitArr_call(self, ctx: MyGrammarParser.Arr_callContext):
@@ -991,27 +1013,20 @@ class MyListener(MyGrammarListener):
                 self.arr_name = ctx.arr_name
                 self.arr_dim = ctx.arr_dim
             self.in_arr_call -= 1
-            '''pilaO_aux = ctx.pilaO_aux.copy()
-            POper_aux = ctx.POper_aux.copy()
-
-            pilaO_aux = pilaO_aux + pilaO
-            pilaO = pilaO_aux.copy()
-            POper = POper_aux.copy()'''
             POper.pop(-1)  # Sacar fondo falso
-        self.debugExit(ctx)
-        pass
 
     # Enter a parse tree produced by MyGrammarParser#arr_call_extra_dim.
+
     def enterArr_call_extra_dim(self, ctx: MyGrammarParser.Arr_call_extra_dimContext):
         if len(pilaO) > 0:
             dim1 = pilaO.pop(-1)
             size = var[self.arr_name][2][0]
-            if var.get(dim1):
+            if var.get(dim1):  # TODO add error when dim is not int
                 quad.append(genQuad.verify(var[dim1][1], cte[size][1]))
             else:
                 quad.append(genQuad.verify(cte[dim1][1], cte[size][1]))
             if self.arr_dim == 1:
-                res = add_temp('int', ctx.start.line)
+                res = add_temp('pointer', ctx.start.line)
                 if var.get(dim1):
                     quad.append(genQuad.exp(
                         '+p', var[dim1][1], var[self.arr_name][1], var[res][1]))
@@ -1029,8 +1044,6 @@ class MyListener(MyGrammarListener):
                     quad.append(genQuad.exp(
                         '*', cte[dim1][1], cte[size2][1], var[res][1]))
                 pilaO.append(res)
-        self.debugEnter(ctx)
-        pass
 
     # Exit a parse tree produced by MyGrammarParser#arr_call_extra_dim.
     def exitArr_call_extra_dim(self, ctx: MyGrammarParser.Arr_call_extra_dimContext):
@@ -1047,14 +1060,16 @@ class MyListener(MyGrammarListener):
             if var.get(dim2):
                 quad.append(genQuad.exp(
                     '+', var[dim1][1], var[dim2][1], var[res][1]))
-                res2 = add_temp('int', ctx.start.line)
-                quad.append(genQuad.exp('+p', var[res][1], var[self.arr_name][1], var[res2][1]))
+                res2 = add_temp('pointer', ctx.start.line)
+                quad.append(genQuad.exp(
+                    '+p', var[res][1], var[self.arr_name][1], var[res2][1]))
             else:
                 quad.append(genQuad.exp(
                     '+', var[dim1][1], cte[dim2][1], var[res][1]))
-            pilaO.append(res)
-        self.debugExit(ctx)
-        pass
+                res2 = add_temp('pointer', ctx.start.line)
+                quad.append(genQuad.exp(
+                    '+p', var[res][1], var[self.arr_name][1], var[res2][1]))
+            pilaO.append(res2)
 
     # Enter a parse tree produced by MyGrammarParser#var_cte.
     def enterVar_cte(self, ctx: MyGrammarParser.Var_cteContext):
@@ -1082,10 +1097,6 @@ class MyListener(MyGrammarListener):
             const_type = 'float'
             address = get_constant_address(const_type, ctx.start.line)
             cte[ctx.CTE_F().getText()] = [const_type, address]
-        elif ctx.CTE_B():  # TODO delete this after testing
-            const_type = 'bool'
-            address = get_constant_address(const_type, ctx.start.line)
-            cte[ctx.CTE_B().getText()] = [const_type, address]
         elif ctx.CTE_STRING():
             const_type = 'string'
             address = get_constant_address(const_type, ctx.start.line)
@@ -1146,7 +1157,11 @@ class MyListener(MyGrammarListener):
 
 class MyErrorListener(ErrorListener.ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise SyntaxError(f"Syntax error at line {line}:{column} - {msg}")
+        try:
+            raise SyntaxError(f"Syntax error at line {line}:{column} - {msg}")
+        except Exception as e:
+            print(e)
+            exit()
 
 
 def add_temp(res_type, line):  # former next_temp
@@ -1187,6 +1202,8 @@ def add_temp(res_type, line):  # former next_temp
 
 
 def clear_temps():
+    global temps_in_func
+    temps_in_func = 0
     will_clear = []
     for key in var:
         if type(key) == int:
@@ -1326,8 +1343,63 @@ float_count_func = 110001
 bool_count_func = 120001
 
 
+def what_type(address):
+    if 30001 <= address <= 39999:
+        res = 'int'
+    elif 40001 <= address <= 49999:
+        res = 'float'
+    elif 50001 <= address <= 59999:
+        res = 'bool'
+    else:
+        res = 'string'
+    return res
+
+
+def change_cte(type, value):
+    if type == 'int':
+        res = int(value)
+    elif type == 'float':
+        res = float(value)
+    elif type == 'bool':
+        if value == 'true':
+            res = True
+        else:
+            res = False
+    else:
+        res = value[1:-1]
+    return res
+
+
+def execute():
+    main()
+    execute_var = {}
+    for key in var:
+        execute_var[var[key][1]] = None
+    execute_cte = {}
+    for key in cte:
+        execute_cte[cte[key][1]] = key
+    for key in execute_cte:
+        type = what_type(key)
+        correct_value = change_cte(type, execute_cte[key])
+        execute_cte[key] = correct_value
+
+    return_aux = 0
+    func_var_aux = {}
+    for key in func:
+        del func[key]['params']
+        if func[key]['return'] != None:
+            for key2 in func[key]['return']:
+                return_aux = func[key]['return'][key2][1]
+        for key2 in func[key]['var']:
+            func_var_aux[func[key]['var'][key2][1]] = None
+        func[key]['return'] = return_aux
+        func[key]['var'] = func_var_aux.copy()
+        func_var_aux.clear()
+    return execute_var, execute_cte, func, quad
+
+
 def main():
-    input_stream = FileStream("test2.pyr")
+    input_stream = FileStream("test3.pyr")
     lexer = MyGrammarLexer(input_stream)
     tokens = CommonTokenStream(lexer)
     parser = MyGrammarParser(tokens)
@@ -1340,7 +1412,7 @@ def main():
     listener = MyListener()
     walker = ParseTreeWalker()
     walker.walk(listener, tree)
-    print('PilaO')
+    '''print('PilaO')
     print(pilaO)
     print('POper')
     print(POper)
@@ -1353,8 +1425,8 @@ def main():
     count = 0
     for i in quad:
         print(count, ":", i)
-        count += 1
+        count += 1'''
 
 
-if __name__ == '__main__':
-    main()
+'''if __name__ == '__main__':
+    main()'''
