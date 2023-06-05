@@ -7,6 +7,7 @@ from antlr4.error import ErrorListener
 import errors
 import genQuad
 from semanticCube import return_type
+from virtualMachine import receive_int_code
 
 
 class MyListener(MyGrammarListener):
@@ -1371,7 +1372,6 @@ def change_cte(type, value):
 
 
 def execute():
-    main()
     execute_var = {}
     for key in var:
         execute_var[var[key][1]] = None
@@ -1395,10 +1395,28 @@ def execute():
         func[key]['return'] = return_aux
         func[key]['var'] = func_var_aux.copy()
         func_var_aux.clear()
-    return execute_var, execute_cte, func, quad
+    receive_int_code(execute_var, execute_cte, func, quad)
 
 
-def main():
+def run_int_code(file_name):
+    input_stream = FileStream(file_name)
+    lexer = MyGrammarLexer(input_stream)
+    tokens = CommonTokenStream(lexer)
+    parser = MyGrammarParser(tokens)
+
+    parser.removeErrorListeners()
+    error_listener = MyErrorListener()
+    parser.addErrorListener(error_listener)
+
+    tree = parser.programa()
+    listener = MyListener()
+    walker = ParseTreeWalker()
+    walker.walk(listener, tree)
+
+    execute()
+
+
+'''def main():
     input_stream = FileStream("test3.pyr")
     lexer = MyGrammarLexer(input_stream)
     tokens = CommonTokenStream(lexer)
@@ -1412,7 +1430,7 @@ def main():
     listener = MyListener()
     walker = ParseTreeWalker()
     walker.walk(listener, tree)
-    '''print('PilaO')
+    print('PilaO')
     print(pilaO)
     print('POper')
     print(POper)

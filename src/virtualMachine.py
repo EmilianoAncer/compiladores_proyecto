@@ -1,4 +1,3 @@
-from codigoIntermedio import execute
 from sys import exit
 import errors
 
@@ -169,7 +168,11 @@ def type_check(address):
     return res
 
 
-def main():
+def receive_int_code(var, cte, func, quad):
+    run_quads(var, cte, func, quad)
+
+
+'''def main():
     var, cte, func, quad = execute()
     print('---------ON VM------------')
     print('var:')
@@ -183,8 +186,8 @@ def main():
     for i in quad:
         print(count, ":", i)
         count += 1
-    run_quads(var, cte, func, quad)
+    run_quads(var, cte, func, quad)'''
 
 
-if __name__ == '__main__':
-    main()
+'''if __name__ == '__main__':
+    main()'''
