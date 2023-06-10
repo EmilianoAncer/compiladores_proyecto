@@ -5,7 +5,7 @@ arr int : array[7][6];
 def int func1(int param1)
 var int : a_func;
 {
-    if (param1 < 10)
+    if (param1 < 15)
     {
         print("param1: ", param1);
         return func1(param1 + 3);
@@ -17,7 +17,7 @@ var int : a_func;
 main()
 {
     a = 1;
-    b = 2;
+    b = 4;
     d = 4.0;
     c = a * b * (3 + 4) - 5;
     print("This is c: ", c);

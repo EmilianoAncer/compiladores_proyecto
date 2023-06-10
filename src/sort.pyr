@@ -1,0 +1,52 @@
+program sort;
+var int : a, b, c;
+arr int : array[10];
+
+def void bubbleSort()
+var int : i, size, aux; bool : sorted;
+{
+    size = 10;
+    sorted = false;
+
+    while(sorted != true)
+    {
+        sorted = true;
+        i = 0;
+
+        while (i < size - 1)
+        {
+            if(array[i] > array[i + 1])
+            {
+                aux = array[i];
+                array[i] = array[i + 1];
+                array[i + 1] = aux;
+                sorted = false;
+            }
+            i = i + 1;
+        }
+        size = size - 1;
+    }
+}
+
+main()
+{
+    array[0] = 23;
+    array[1] = 87;
+    array[2] = 74;
+    array[3] = 43;
+    array[4] = 37;
+    array[5] = 98;
+    array[6] = 57;
+    array[7] = 86;
+    array[8] = 2;
+    array[9] = 15;
+
+    bubbleSort();
+
+    c = 0;
+    while(c < 10)
+    {
+        print(array[c]);
+        c = c + 1;
+    }
+}

@@ -422,6 +422,7 @@ class MyListener(MyGrammarListener):
 
     # Exit a parse tree produced by MyGrammarParser#asignacion.
     def exitAsignacion(self, ctx: MyGrammarParser.AsignacionContext):
+        self.debugExit(ctx)
         if ctx.ID():
             var_id = ctx.ID().getText()
             if not var.get(var_id):
@@ -433,6 +434,8 @@ class MyListener(MyGrammarListener):
                 else:
                     res_aux = cte[res]
                 if var[var_id][0] == res_aux[0]:
+                    quad.append(genQuad.asign(var[var_id][1], res_aux[1]))
+                elif res_aux[0] == 'pointer':
                     quad.append(genQuad.asign(var[var_id][1], res_aux[1]))
                 else:
                     curr_line = ctx.start.line
@@ -589,13 +592,17 @@ class MyListener(MyGrammarListener):
             else:
                 if self.context == 'func':
                     to_return = pilaO.pop(-1)
-                    if self.which_func[1] == var[to_return][0]:
-                        quad.append(genQuad.ret(var[to_return][1]))
+                    if var.get(to_return):
+                        aux = var[to_return]
+                    else:
+                        aux = cte[to_return]
+                    if self.which_func[1] == aux[0]:
+                        quad.append(genQuad.ret(aux[1]))
                         quad.append(genQuad.end_func())
                         self.return_count += 1
                     else:
                         errors.bad_return_type(
-                            ctx.start.line, self.which_func[1], var[to_return][0])
+                            ctx.start.line, self.which_func[1], aux[0])
 
     # Enter a parse tree produced by MyGrammarParser#escritura.
 
@@ -754,10 +761,18 @@ class MyListener(MyGrammarListener):
                             left_type = cte[left_operand][0]
                             left_table = 'cte'
                         operator = POper.pop(-1)
+                        if left_type == 'pointer':
+                            left_type = right_type
+                        elif right_type == 'pointer':
+                            right_type = left_type
+                        if left_type == 'pointer' and right_type == 'pointer':
+                            left_type = var[self.arr_name][0]
+                            right_type = var[self.arr_name][0]
                         res_type = return_type(
                             right_type, operator, left_type)
                         if res_type == 'error':
                             errors.bad_type(ctx.start.line)
+
                         res = add_temp(res_type, ctx.start.line)
                         quad_aux = [operator]
                         if left_table == 'var':
@@ -828,6 +843,13 @@ class MyListener(MyGrammarListener):
                             left_type = cte[left_operand][0]
                             left_table = 'cte'
                         operator = POper.pop(-1)
+                        if left_type == 'pointer':
+                            left_type = right_type
+                        elif right_type == 'pointer':
+                            right_type = left_type
+                        if left_type == 'pointer' and right_type == 'pointer':
+                            left_type = var[self.arr_name][0]
+                            right_type = var[self.arr_name][0]
                         res_type = return_type(
                             right_type, operator, left_type)
                         if res_type == 'error':

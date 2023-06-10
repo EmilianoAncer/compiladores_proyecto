@@ -1,0 +1,25 @@
+program factorial;
+var int : b, c;
+
+def int fib(int j)
+var int : n, p;
+{
+    if(j == 1 or j == 2)
+    {
+        return 1;
+    }
+    else
+    {
+        n = fib(j - 1);
+        p = fib(j - 2);
+        return n + p;
+    }
+    
+}
+
+main()
+{
+    c = read("Valor de j: ");
+    b = fib(c);
+    print(b);
+}

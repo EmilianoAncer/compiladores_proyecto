@@ -1,14 +1,14 @@
 program hello;
+var int : a, b, c;
+arr int : array[8], mat[5][5];
 
-def int func1(int param1, float param2)
-var int : a;
-arr float : b[4]
-{
-}
 
 main()
 {
-    while (a == b)
-    {
-    }
+    a = 2;
+    b = 1;
+    array[a + b] = 5;
+    print(array[a + b]);
+    mat[a][a + b] = 10;
+    print(mat[a][a + b]);
 }

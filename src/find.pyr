@@ -1,0 +1,72 @@
+program find;
+var int : a, b, x, y, z;
+arr int : array[5], mat[3][4];
+
+def int findArr(int n)
+var int : i;
+{
+    i = 0;
+    while (array[i] != n)
+    {
+        i = i + 1;
+        if (i == 5)
+        {
+            print("Array not found");
+            return -1;
+        }
+    }
+    return i;
+}
+
+def void findMat(int n)
+var int : i, j; bool : flag;
+{
+    i = 0;
+    j = 0;
+    while (i < 3)
+    {
+        while(j < 4)
+        {
+            if (mat[i][j] == n)
+            {
+                print("Matrix index: ", i, " ", j);
+                flag = true;
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+        j = 0;
+    }
+    if (flag != true)
+    {
+        print("Matrix not found");
+    }
+}
+
+main()
+{
+    array[0] = 23;
+    array[1] = 87;
+    array[2] = 74;
+    array[3] = 43;
+    array[4] = 37;
+
+    a = findArr(37);
+    print("Array index: ", a);
+
+    x = 0;
+    y = 0;
+    z = 12;
+    while (x < 3)
+    {
+        while (y < 4)
+        {
+            mat[x][y] = z;
+            y = y + 1;
+            z = z - 1;
+        }
+        x = x + 1;
+        y = 0;
+    }
+    findMat(9);
+}

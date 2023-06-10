@@ -1,0 +1,54 @@
+program sumaMat;
+var int : x, y, z;
+arr int : mat1[3][3], mat2[3][3], matRes[3][3];
+
+def void addMat()
+var int : i, j;
+{
+    i = 0;
+    j = 0;
+    while(i < 3)
+    {
+        while(j < 3)
+        {
+            matRes[i][j] = mat1[i][j] + mat2[i][j];
+            j = j + 1;
+        }
+        i = i + 1;
+        j = 0;
+    }
+}
+
+main()
+{
+    x = 0;
+    y = 0;
+    z = 9;
+    while (x < 3)
+    {
+        while (y < 3)
+        {
+            mat1[x][y] = z;
+            mat2[x][y] = z;
+            y = y + 1;
+            z = z - 1;
+        }
+        x = x + 1;
+        y = 0;
+    }
+
+    addMat();
+    x = 0;
+    y = 0;
+    while(x < 3)
+    {
+        while(y < 3)
+        {
+            print(matRes[x][y]);
+            y = y + 1;
+        }
+        x = x + 1;
+        y = 0;
+    }
+
+}

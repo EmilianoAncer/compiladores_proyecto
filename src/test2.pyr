@@ -2,23 +2,22 @@ program test;
 var int : i, j, p; float : a, b;
 arr int : arreglo[12], mat[12][9];
 
-def int func1(int param1)
-var int : a_func;
-{
-    if (param1 < 10)
-    {
-        print("param1: ", param1);
-        return func1(param1 + 3);
-    }
-    print("This is global j: ", j);
-    return param1;
-}
+
 
 main()
 {   
+    i = 5;
     j = read("Input value for j: ");
-    p = func1(4);
+    p = 10;
     print("value of p: ", p);
+    if (i < p){
+        while(j < p)
+        {
+            print(In while);
+            j = j + 1;
+        }
+    }
+    print("Fuera de if y while", j);
 }
 
 

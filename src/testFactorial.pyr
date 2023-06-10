@@ -1,0 +1,25 @@
+program factorial;
+var int : b, c;
+
+def int fact(int j)
+var int : x;
+{
+    if(j == 1)
+    {
+        print("Exited in if");
+        return j;
+    }
+    else
+    {
+        print("recur ", j);
+        return fact(j - 1) * j;
+    }
+    
+}
+
+main()
+{
+    c = read("Valor de j: ");
+    b = fact(c);
+    print(b);
+}

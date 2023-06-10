@@ -1,0 +1,28 @@
+program factCiclo;
+var int : a, b;
+
+
+def int fact(int n)
+var int : res;
+{
+    res = 1;
+    while (n > 0)
+    {
+        res = res * n;
+        n = n - 1;
+    }
+    return res;
+}
+
+def int pelos(int x)
+{
+    return fact(x * 2) + 2;
+}
+
+main()
+{
+    a = read("Valor a ");
+    b = pelos(a);
+    print(b);
+
+}

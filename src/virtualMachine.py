@@ -8,6 +8,7 @@ def run_quads(var, cte, func, quad):
     in_func = False
     store_temps = []
     curr = 0
+    aux_var = []
     for key in cte:
         var[key] = cte[key]
     '''print(var)
@@ -15,6 +16,7 @@ def run_quads(var, cte, func, quad):
     while (True):
         curr_quad = quad[curr]
         if curr_quad[0] in ['+', '-', '*', '/', '<', '>', '<=', '>=', '==', '!=', 'and', 'or']:
+
             left = var[curr_quad[1]]
             if type_check(curr_quad[1]) == 'pointer':
                 left = var[left]
@@ -26,6 +28,7 @@ def run_quads(var, cte, func, quad):
             var[curr_quad[3]] = eval(expresion)
             if in_func:
                 store_temps.append(curr_quad[3])
+
         elif curr_quad[0] == '=':
             assign_to = curr_quad[3]
             if type_check(assign_to) == 'pointer' and assign_to != None:
@@ -37,13 +40,16 @@ def run_quads(var, cte, func, quad):
                 var[assign_to] = var[value]
             else:
                 errors.bad_type_on_assign()
+
         elif curr_quad[0] == 'WRITE':
             to_print = curr_quad[3]
             if type_check(to_print) == 'pointer':
                 to_print = var[to_print]
             print(var[to_print], end='')
+
         elif curr_quad[0] == 'WRITE_END':
             print()
+
         elif curr_quad[0] == 'READ':
             in_type, in_value = check_input_type(input())
             var_type = type_check(curr_quad[3])
@@ -51,53 +57,69 @@ def run_quads(var, cte, func, quad):
                 var[curr_quad[3]] = in_value
             else:
                 errors.bad_type_on_read()
+
         elif curr_quad[0] == 'END':
             exit()
         elif curr_quad[0] == 'GOTOF':
             if var[curr_quad[1]] == False:
                 curr = curr_quad[3] - 1
+
         elif curr_quad[0] == 'GOTO':
             curr = curr_quad[3] - 1
+
         elif curr_quad[0] == 'ERA':
             func_name = curr_quad[1]
-            store_temps.clear()
             in_func = True
-            if not in_func:
-                for key in func[func_name]['var']:
-                    # agrego las variables locales a la tabla global
+            # if not in_func:
+            for key in func[func_name]['var']:
+                # agrego las variables locales a la tabla global
+                if not var.get(key):
                     var[key] = None
+            aux_var.append(var.copy())
+
         elif curr_quad[0] == 'PARAM':
             var[curr_quad[3]] = var[curr_quad[1]]
+
         elif curr_quad[0] == 'GOSUB':
             # Basicamente un goto al inicio de la funcion
             # guardo a donde tengo que regresar
             breadcrumb.append(curr)
             curr = func[func_name]['start'] - 1
+
         elif curr_quad[0] == 'RETURN':
             func_return_address = func[func_name]['return']
             func_type = type_check(func_return_address)
             return_value = var[curr_quad[3]]
             return_value_type = check_return_type(return_value)
+            var = aux_var.pop(-1)
             if func_type == return_value_type:
                 # Se pone el valor de result en la variable de return de la funcion
                 var[func_return_address] = return_value
             else:
                 errors.bad_type_on_return()
+
         elif curr_quad[0] == 'ENDFUNC':
-            to_delete = []
-            for key in func[func_name]['var']:
-                to_delete.append(key)
-            for key in to_delete:
-                if var.get(key):
-                    del var[key]  # borrando las variables locales
-            for key in store_temps:
-                del var[key]  # Borrando las temps que se usaron en la funcion
-            store_temps.clear()
-            in_func = False
+            if len(breadcrumb) == 1:
+                in_func = False
+            if not in_func:
+                to_delete = []
+                for key in func[func_name]['var']:
+                    to_delete.append(key)
+                for key in to_delete:
+                    if var.get(key):
+                        del var[key]  # borrando las variables locales
+                for key in store_temps:
+                    # Borrando las temps que se usaron en la funcion
+                    if var.get(key):
+                        del var[key]
+                store_temps.clear()
+
             curr = breadcrumb.pop(-1)
+
         elif curr_quad[0] == 'VER':
             if not (0 <= var[curr_quad[1]] < var[curr_quad[3]]):
                 errors.out_of_bounds()
+
         elif curr_quad[0] == '+p':
             var[curr_quad[3]] = var[curr_quad[1]] + curr_quad[2]
 
