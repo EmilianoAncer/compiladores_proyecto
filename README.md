@@ -41,7 +41,7 @@ Batalle para entender como funcionaba la libreria, pero haber hecho las tablas m
 2. Se agrego la gramatica de funciones, tabla y funcionalidad de tabla de funciones.
 <br/><br/>
 
-## Avance 28 de mayo
+### Avance 28 de mayo
 Este ha sido mi avance mas grande al proyecto, al fin emepece con la generacion de cuadruplos en el codigo intermedio. En este avance hice que se generaran cuadruplos para:<br/><br/>
 1. Expresiones - Aritmeticos, logicos, relacionales y expresiones con parentesis.
 2. Asignamiento - Se puede asignar a una variable expresiones, variables y constantes.
@@ -55,22 +55,14 @@ Como puse arriba me falta llamada de funciones y tambien me falta arreglos y mat
 #### Commits
 Lo agregare despues, son muchos.
 
-## Avance 3 de junio
+### Avance 3 de junio
 Termine las llamadas de funciones y tambien la declaracion de arreglos, los accesos de arreglo esta a punto de que funcionen completamente, para la entrega no alcance a que funcionaran cuando tienes un acceso a arreglo adentro de la dimension de otro arreglo, pero hoy mismo dejare eso funcionando, mañana me enfocare completamente en la VM para acabar el proyecto.
 
 
 
-## Testing
-Para poder hacer testing de las grammars se necesitan las herramientas de ANTLR4.
-1. En la carpeta con MyGrammar.g4 
+# Compilacion
+2. En el forder src/
    ```
-    $ antlr MyGrammar.g4 -visitor -Dlanguage=Python3 -o antlr
+    $ python3 compile_pyr.py file.pyr
    ```
-2. Correr el script runGrammar.py
-   ```
-    $ python3 codigoIntermedio.py
-   ```
-3. Para cambiar el archivo sobre el cual se hacen pruebas.<br/><br/>
-   En el archivo codigoIntermedio.py, en la funcion main(). Cambiar el nombre de archivo entre comillas al nuevo archivo. 
-   ```
-    input_stream = FileStream("test2.pyr")
+
